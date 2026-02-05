@@ -1,25 +1,22 @@
 from flask import Flask, render_template, request
 
+# The '../templates' is crucial so it finds your HTML folder
 app = Flask(__name__, template_folder='../templates')
 
-# Your Weekly Menu - Update this whenever you like!
-MENU = [
-    {"id": 1, "name": "Country Sourdough", "price": 10.00},
-    {"id": 2, "name": "Jalapeño Cheddar", "price": 12.00},
-    {"id": 3, "name": "Rosemary Sea Salt", "price": 11.00}
-]
-
 @app.route('/')
-def index():
-    return render_template('index.html', items=MENU)
+def home():
+    return render_template('index.html')
 
-@app.route('/order', methods=['POST'])
-def order():
+@app.route('/submit', methods=['POST'])
+def submit():
+    # This captures the order data from your form
     name = request.form.get('name')
-    bread = request.form.get('bread_name')
-    # This will show a simple success message to the customer
-    return f"<h1>Thanks, {name}!</h1><p>We've received your order for {bread}. We'll contact you for payment soon.</p>"
+    bread = request.form.get('bread')
+    notes = request.form.get('notes')
+    
+    # For now, it just shows a "Thank You" message
+    return f"<h1>Order Received!</h1><p>Thanks {name}, we'll contact you about your {bread} loaf soon!</p><a href='/'>Back to Home</a>"
 
-# Required for Vercel to treat this as a serverless function
+# Vercel needs this exact function to bridge the gap
 def handler(event, context):
     return app(event, context)
