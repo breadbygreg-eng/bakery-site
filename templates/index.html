@@ -22,14 +22,23 @@
         <p>Small-batch, artisan sourdough baked in Clarksburg, MD.</p>
     </header>
 
-    <div class="menu-section">
-        <h2>This Week's Bake</h2>
-        <ul>
-            <li><strong>Classic Country Sourdough:</strong> Wild yeast, long fermentation.</li>
-            <li><strong>Roasted Garlic & Rosemary:</strong> Savory and aromatic.</li>
-            <li><strong>Jalapeño Cheddar:</strong> For a little bit of kick.</li>
-        </ul>
-    </div>
+   <div class="menu-section">
+    <h2>This Week's Bake (Updated: {{ menu.last_updated }})</h2>
+    <ul>
+        {% for item in menu.items %}
+        <li>
+            <strong>{{ item.name }}</strong> - ${{ item.price }}<br>
+            <small>{{ item.description }}</small>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<select id="bread" name="bread">
+    {% for item in menu.items %}
+    <option value="{{ item.name }}">{{ item.name }} (${{ item.price }})</option>
+    {% endfor %}
+</select>
 
     <div class="order-form">
         <h2>Place an Order</h2>
@@ -53,3 +62,4 @@
 
 </body>
 </html>
+
