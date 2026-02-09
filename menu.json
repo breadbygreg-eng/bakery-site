@@ -1,0 +1,11 @@
+{
+  "last_updated": "2026-02-09",
+  "is_open": true,
+  "items": [
+    {"name": "Country Loaf - 650 g", "price": 9, "description": "Sifted Organic Flour, Whole Wheat Flour, Whole Rye Flour, Water, Salt, Wild yeast, 24-hour ferment.", "limit": 15},
+    {"name": "100% Whole Wheat - 650 g", "price": 9, "description": "Organic Whole Wheat Flour, Water, Salt, Wild Yeast", "limit": 10},
+    {"name": "Large Country Loaf - 1 kg", "price": 12, "description": "Sifted Organic Flour, Whole Wheat Flour, Whole Rye Flour, Water, Salt, Wild yeast, 24-hour ferment.", "limit": 15},
+    {"name": "Large 100% Whole Wheat - 1 kg", "price": 9, "description": "Organic Whole Wheat Flour, Water, Salt, Wild Yeast", "limit": 10}
+    {"name": "Cashew & Raisin  Loaf - 850 g", "price": 14, "description": "Sifted Organic Flour, Whole Wheat Flour, Whole Rye Flour, Water, Raisins, Roasted Cashews, Salt, Wild yeast, 24-hour ferment.", "limit": 15}
+  ]
+}
