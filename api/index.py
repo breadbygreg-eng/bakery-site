@@ -1,17 +1,21 @@
 from flask import Flask, render_template, request
+import json
+import os
 
 app = Flask(__name__, template_folder='../templates')
 
+def get_menu():
+    # This opens your menu.json file and reads the data
+    with open(os.path.join(os.path.dirname(__file__), '../menu.json'), 'r') as f:
+        return json.load(f)
+
 @app.route('/')
 def home():
-    return render_template('index.html')
+    menu_data = get_menu()
+    return render_template('index.html', menu=menu_data)
 
 @app.route('/submit', methods=['POST'])
 def submit():
+    # This is where we will eventually save orders to a spreadsheet
     name = request.form.get('name')
-    bread = request.form.get('bread')
-    return f"<h1>Order Received!</h1><p>Thanks {name}, we'll contact you about your {bread} loaf soon!</p>"
-
-# DO NOT add a 'def handler' here. 
-# Vercel's Python runtime will find the 'app' object automatically 
-# if the vercel.json is set up as a simple rewrite.
+    return f"<h1>Thanks {name}!</h1><p>Order received. Check your phone for confirmation soon.</p>"
