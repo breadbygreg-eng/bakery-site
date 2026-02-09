@@ -3,64 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aiara Bakery | Artisan Sourdough Bread</title>
+    <title>Aiara Bakery | Artisan Sourdough</title>
     <style>
         body { font-family: 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f9f7f2; }
         header { text-align: center; padding: 40px 0; border-bottom: 2px solid #e0d8c3; }
         h1 { color: #5d4037; margin-bottom: 10px; }
         .menu-section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-top: 20px; }
+        .item { border-bottom: 1px dashed #e0d8c3; padding: 15px 0; }
+        .item:last-child { border-bottom: none; }
+        .sold-out { color: #d9534f; font-weight: bold; text-transform: uppercase; }
         .order-form { margin-top: 30px; background: #5d4037; color: white; padding: 25px; border-radius: 8px; }
-        input, select, textarea { width: 100%; padding: 10px; margin: 10px 0; border-radius: 4px; border: none; }
-        button { background-color: #d4a373; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-size: 16px; width: 100%; }
+        input, select, textarea { width: 100%; padding: 10px; margin: 10px 0; border-radius: 4px; border: 1px solid #ccc; box-sizing: border-box; }
+        button { background-color: #d4a373; color: white; border: none; padding: 15px 20px; border-radius: 4px; cursor: pointer; font-size: 18px; width: 100%; font-weight: bold; }
         button:hover { background-color: #bc8a5f; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
     </style>
 </head>
 <body>
 
     <header>
         <h1>Aiara Bakery</h1>
-        <p>Small-batch, artisan sourdough bread baked in Clarksburg, MD.</p>
+        <p>Small-batch, artisan sourdough baked in Clarksburg, MD.</p>
     </header>
 
-   <div class="menu-section">
-    <h2>This Week's Bake (Updated: {{ menu.last_updated }})</h2>
-    <ul>
-        {% for item in menu.items %}
-        <li>
-            <strong>{{ item.name }}</strong> - ${{ item.price }}<br>
-            <small>{{ item.description }}</small>
-        </li>
+    <div class="menu-section">
+        <h2>This Week's Menu</h2>
+        {% for item in items %}
+        <div class="item">
+            <strong>{{ item['Item Name'] }}</strong> — ${{ item['Price'] }}
+            {% if item['Remaining']|int <= 0 %}
+                <span class="sold-out"> (Sold Out)</span>
+            {% endif %}
+            <br><small>{{ item['Description'] }}</small>
+        </div>
         {% endfor %}
-    </ul>
-</div>
-
-<select id="bread" name="bread">
-    {% for item in menu.items %}
-    <option value="{{ item.name }}">{{ item.name }} (${{ item.price }})</option>
-    {% endfor %}
-</select>
+    </div>
 
     <div class="order-form">
-        <h2>Place an Order</h2>
+        <h2>Place Your Order</h2>
         <form action="/submit" method="POST">
             <label for="name">Your Name:</label>
-            <input type="text" id="name" name="name" placeholder="Name" required>
+            <input type="text" id="name" name="name" placeholder="Full Name" required>
             
+            <label for="phone">Phone Number (for pickup details):</label>
+            <input type="tel" id="phone" name="phone" placeholder="301-555-0123" required>
+
             <label for="bread">Choose Your Loaf:</label>
-            <select id="bread" name="bread">
-                <option value="classic">Classic Country ($10)</option>
-                <option value="garlic">Roasted Garlic ($12)</option>
-                <option value="jalapeno">Jalapeño Cheddar ($12)</option>
+            <select id="bread" name="bread" required>
+                <option value="" disabled selected>Select a loaf...</option>
+                {% for item in items %}
+                    {% if item['Remaining']|int > 0 %}
+                        <option value="{{ item['Item Name'] }}">{{ item['Item Name'] }} (${{ item['Price'] }})</option>
+                    {% else %}
+                        <option value="{{ item['Item Name'] }}" disabled>{{ item['Item Name'] }} (SOLD OUT)</option>
+                    {% endif %}
+                {% endfor %}
             </select>
 
-            <label for="notes">Special Requests/Pickup Time:</label>
-            <textarea id="notes" name="notes" rows="3"></textarea>
+            <label for="notes">Special Requests / Pickup Time:</label>
+            <textarea id="notes" name="notes" rows="3" placeholder="Example: Pick up Thursday after 4 PM"></textarea>
             
-            <button type="submit">Send Order Request</button>
+            <button type="submit">Submit Order</button>
         </form>
     </div>
 
 </body>
 </html>
-
-
