@@ -4,7 +4,7 @@ from flask import Flask, render_template, request
 import gspread
 from google.oauth2.service_account import Credentials
 
-app = Flask(__name__, template_folder='../templates')
+app = Flask(__name__, template_folder='../templates', static_folder='../static')
 
 def get_sheet():
     info = json.loads(os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON'))
