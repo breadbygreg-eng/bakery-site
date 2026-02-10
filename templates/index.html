@@ -16,18 +16,22 @@
             margin: 0;
             padding: 0;
             font-family: 'Lato', sans-serif;
-            /* Using your actual file name from GitHub: Bread_Pile.jpg */
-            /* The linear-gradient creates a dark "scrim" so the text is readable */
+            /* MATCHING YOUR GITHUB: Using the /static/ prefix and exact filename */
+            /* The linear-gradient creates a dark overlay so your text stays readable */
             background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
                         url('/static/Bread_Pile.jpg') no-repeat center center fixed;
             background-size: cover;
             color: #333;
             min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .main-container {
+            width: 90%;
             max-width: 600px;
-            margin: 60px auto;
+            margin: 40px auto;
             background: rgba(255, 255, 255, 0.98); 
             padding: 40px;
             border-radius: 4px;
@@ -36,7 +40,7 @@
 
         header { 
             text-align: center; 
-            padding-bottom: 30px; 
+            padding-bottom: 25px; 
             border-bottom: 1px solid #eee; 
             margin-bottom: 30px;
         }
@@ -58,7 +62,7 @@
         }
 
         /* --- Menu Section --- */
-        .menu-section h2 { font-family: 'Playfair Display', serif; }
+        .menu-section h2 { font-family: 'Playfair Display', serif; color: var(--primary-brown); }
         
         .item { 
             display: flex;
@@ -94,9 +98,11 @@
             background: rgba(255,255,255,0.1);
             color: white;
             box-sizing: border-box;
+            font-size: 1rem;
         }
 
-        option { color: black; } /* Makes dropdown text visible */
+        /* Essential for dropdown readability */
+        option { color: black; } 
 
         button { 
             background-color: var(--accent-gold); 
@@ -115,7 +121,8 @@
         button:hover { background-color: #bc8a5f; }
 
         @media (max-width: 600px) {
-            .main-container { margin: 20px; padding: 25px; }
+            .main-container { padding: 25px; margin: 20px auto; }
+            h1 { font-size: 2.2rem; }
         }
     </style>
 </head>
@@ -144,14 +151,17 @@
         </div>
 
         <div class="order-form">
-            <h2 style="font-family: 'Playfair Display', serif; margin-top: 0;">Place Your Order</h2>
+            <h2 style="font-family: 'Playfair Display', serif; margin-top: 0;">Reserve Your Loaf</h2>
             <form action="/submit" method="POST">
-                <label for="name">Your Name</label>
+                <label for="name">Name</label>
                 <input type="text" id="name" name="name" required>
 
-                <label for="bread">Select Bread</label>
+                <label for="contact">Email or Phone</label>
+                <input type="text" id="contact" name="contact" required>
+
+                <label for="bread">Bread Selection</label>
                 <select id="bread" name="bread" required>
-                    <option value="" disabled selected>Choose a loaf...</option>
+                    <option value="" disabled selected>Select a loaf...</option>
                     {% for item in items %}
                         <option value="{{ item['Item Name'] }}" {% if item['Remaining']|int <= 0 %}disabled{% endif %}>
                             {{ item['Item Name'] }} {% if item['Remaining']|int <= 0 %}(Sold Out){% endif %}
@@ -159,8 +169,8 @@
                     {% endfor %}
                 </select>
 
-                <label for="notes">Notes (Pickup Time, etc.)</label>
-                <textarea id="notes" name="notes" rows="2"></textarea>
+                <label for="notes">Notes</label>
+                <textarea id="notes" name="notes" rows="2" placeholder="Requested pickup time..."></textarea>
                 
                 <button type="submit">Submit Reservation</button>
             </form>
