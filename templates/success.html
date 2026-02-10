@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmed | Aiara Bakery</title>
+    <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; text-align: center; padding: 50px; background-color: #f9f7f2; color: #333; }
+        .card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 500px; margin: 0 auto; }
+        h1 { color: #5d4037; }
+        .details { text-align: left; background: #fdfaf5; padding: 20px; border-left: 5px solid #d4a373; margin: 20px 0; }
+        .btn { display: inline-block; padding: 12px 25px; background: #5d4037; color: white; text-decoration: none; border-radius: 5px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Fresh Bread Incoming!</h1>
+        <p>Thanks, <strong>{{ name }}</strong>. We've received your order and added it to the bake list.</p>
+        
+        <div class="details">
+            <h3>Important Details for this Week:</h3>
+            <p><strong>Pickup:</strong> {{ details['Pickup Instructions'] }}</p>
+            <p><strong>Delivery:</strong> {{ details['Delivery Info'] }}</p>
+        </div>
+
+        <p>If you need to change anything, please text Greg directly.</p>
+        <a href="/" class="btn">Back to Home</a>
+    </div>
+</body>
+</html>
