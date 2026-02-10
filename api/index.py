@@ -32,19 +32,27 @@ def home():
 @app.route('/submit', methods=['POST'])
 def submit():
     try:
-        # Capture form data
+        # 1. Capture Form Data
         name = request.form.get('name')
         phone = request.form.get('phone')
         bread = request.form.get('bread')
         notes = request.form.get('notes')
         
-        # Log to the 'Orders' tab
+        # 2. Log Order to Google Sheets
         sheet = get_sheet()
         order_sheet = sheet.worksheet("Orders")
-        # We'll add a 'New' status so you know what needs baking
         order_sheet.append_row([name, phone, bread, notes, 'New'])
         
-        return f"<h1>Order Received!</h1><p>Thanks {name}, your {bread} is on the list!</p><a href='/'>Back to Home</a>"
+        # 3. Fetch Pickup Details from 'Settings' tab
+        settings_sheet = sheet.worksheet("Settings")
+        settings = settings_sheet.get_all_records()
+        
+        # Convert list of dicts to a simple dictionary for easy access
+        # This turns it into: {'Pickup Instructions': 'Thursday...', 'Delivery Info': 'Friday...'}
+        details = {item['Setting Name']: item['Value'] for item in settings}
+        
+        return render_template('success.html', name=name, details=details)
+        
     except Exception as e:
         print(f"SUBMIT_ERROR: {e}")
-        return "There was a glitch in the oven! Please try again or text Greg directly."
+        return "Order logged, but there was a glitch showing the confirmation. Don't worry, Greg has your order!"
