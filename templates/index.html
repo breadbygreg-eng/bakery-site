@@ -52,10 +52,13 @@
             <select id="bread" name="bread" required>
                 <option value="" disabled selected>Select a loaf...</option>
                 {% for item in items %}
-                    {% if item['Remaining']|int > 0 %}
-                        <option value="{{ item['Item Name'] }}">{{ item['Item Name'] }} (${{ item['Price'] }})</option>
-                    {% else %}
-                        <option value="{{ item['Item Name'] }}" disabled>{{ item['Item Name'] }} (SOLD OUT)</option>
+                    {# We check if the item is 'Active' and has stock #}
+                    {% if item['Status'] == 'Active' %}
+                        {% if item['Remaining']|int > 0 %}
+                            <option value="{{ item['Item Name'] }}">{{ item['Item Name'] }} (${{ item['Price'] }})</option>
+                        {% else %}
+                            <option value="{{ item['Item Name'] }}" disabled>{{ item['Item Name'] }} (SOLD OUT)</option>
+                        {% endif %}
                     {% endif %}
                 {% endfor %}
             </select>
@@ -69,3 +72,4 @@
 
 </body>
 </html>
+
