@@ -9,6 +9,7 @@ from google.oauth2.service_account import Credentials
 
 app = Flask(__name__, template_folder='../templates')
 
+# --- Helper: Google Sheets Connection ---
 def get_sheet():
     info = json.loads(os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON'))
     scope = ['https://www.googleapis.com/auth/spreadsheets']
@@ -16,26 +17,24 @@ def get_sheet():
     client = gspread.authorize(creds)
     return client.open_by_key(os.environ.get('GOOGLE_SHEET_ID'))
 
-# --- NEW: Automated Email Function ---
-def send_admin_alert(order_data):
-    sender = "breadbygreg@gmail.com"
-    # This pulls your App Password from Vercel Environment Variables
-    pw = os.environ.get('GMAIL_APP_PASSWORD') 
-    
-    subject = f"🍞 New Aiara Order: {order_data['name']}"
-    body = f"Item: {order_data['bread']}\nNotes: {order_data['notes']}\nContact: {order_data['contact']}"
+# --- Helper: Email Notifications ---
+def send_email(subject, body, recipient):
+    sender = "breadbygreg@gmail.com" #
+    pw = os.environ.get('GMAIL_APP_PASSWORD') #
     
     msg = MIMEText(body)
     msg['Subject'] = subject
     msg['From'] = sender
-    msg['To'] = sender
+    msg['To'] = recipient
 
     try:
         with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
             server.login(sender, pw)
-            server.sendmail(sender, sender, msg.as_string())
+            server.sendmail(sender, recipient, msg.as_string())
     except Exception as e:
-        print(f"Email Alert Failed: {e}")
+        print(f"Email Error: {e}")
+
+# --- Routes ---
 
 @app.route('/')
 def home():
@@ -73,8 +72,9 @@ def submit():
             value_input_option='USER_ENTERED'
         )
         
-        # --- NEW: Trigger the Email Alert ---
-        send_admin_alert({'name': name, 'bread': bread, 'notes': notes, 'contact': phone})
+        # Admin Alert
+        admin_body = f"New order received for {bread}.\n\nNotes: {notes}\nContact: {phone}"
+        send_email(f"🍞 New Aiara Order: {name}", admin_body, "breadbygreg@gmail.com")
         
         settings_sheet = sheet.worksheet("Settings")
         settings = settings_sheet.get_all_records()
@@ -85,44 +85,25 @@ def submit():
         print(f"Error submitting order: {e}")
         return "There was an issue processing your reservation."
 
-# --- NEW: Route to handle 'Notify Me' Signups ---
 @app.route('/subscribe', methods=['POST'])
 def subscribe():
     try:
         contact = request.form.get('sub_contact')
         timestamp = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
         
-        sheet = get_sheet()
-        sub_sheet = sheet.worksheet("Subscribers")
-        sub_sheet.append_row([timestamp, contact], value_input_option='USER_ENTERED')
-        
-        return "<h3>Success! You're on the list.</h3><p>We'll notify you when the oven is hot.</p><a href='/'>Back to Menu</a>"
-    except Exception as e:
-        print(f"Subscription Error: {e}")
-        return "Could not add to list. Please try again later."
-
-# --- Updated Subscribe Route with Welcome Email ---
-@app.route('/subscribe', methods=['POST'])
-def subscribe():
-    try:
-        contact = request.form.get('sub_contact')
-        timestamp = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
-        
-        # 1. Save to Google Sheet
         sheet = get_sheet()
         sub_sheet = sheet.worksheet("Subscribers")
         sub_sheet.append_row([timestamp, contact, 'Active'], value_input_option='USER_ENTERED')
         
-        # 2. Send Welcome Email (if contact is an email)
         if "@" in contact:
-            send_welcome_email(contact)
+            welcome_body = "Welcome to Aiara Bakery!\n\nYou'll be the first to know when our sourdough oven is preheated.\n\nTo stop receiving these, visit: aiarabakery.com/unsubscribe"
+            send_email("🍞 You're on the Aiara Bake List!", welcome_body, contact)
         
         return "<h3>You're on the list!</h3><p>We'll notify you when the next bake begins.</p><a href='/'>Back to Menu</a>"
     except Exception as e:
         print(f"Subscription Error: {e}")
         return "Could not add to list. Please try again later."
 
-# --- New: Unsubscribe Route ---
 @app.route('/unsubscribe', methods=['GET', 'POST'])
 def unsubscribe():
     if request.method == 'POST':
@@ -131,26 +112,8 @@ def unsubscribe():
             sheet = get_sheet()
             sub_sheet = sheet.worksheet("Subscribers")
             cell = sub_sheet.find(contact)
-            # Mark as 'Unsubscribed' in Column C rather than deleting (for records)
             sub_sheet.update_cell(cell.row, 3, 'Unsubscribed')
             return "<h3>You have been unsubscribed.</h3><p>We're sorry to see you go!</p>"
         except:
             return "Contact not found on our list."
     return render_template('unsubscribe.html')
-
-# --- New: Welcome Email Logic ---
-def send_welcome_email(user_email):
-    sender = "breadbygreg@gmail.com"
-    pw = os.environ.get('GMAIL_APP_PASSWORD') 
-    
-    msg = MIMEText(f"Welcome to Aiara Bakery!\n\nYou'll be the first to know when our sourdough oven is preheated.\n\nTo stop receiving these, visit: aiarabakery.com/unsubscribe")
-    msg['Subject'] = "🍞 You're on the Aiara Bake List!"
-    msg['From'] = sender
-    msg['To'] = user_email
-
-    try:
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
-            server.login(sender, pw)
-            server.sendmail(sender, user_email, msg.as_string())
-    except Exception as e:
-        print(f"Welcome Email Failed: {e}")
