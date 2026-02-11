@@ -19,8 +19,8 @@ def get_sheet():
 
 # --- Helper: Email Notifications ---
 def send_email(subject, body, recipient):
-    sender = "breadbygreg@gmail.com" #
-    pw = os.environ.get('GMAIL_APP_PASSWORD') #
+    sender = "breadbygreg@gmail.com"
+    pw = os.environ.get('GMAIL_APP_PASSWORD')
     
     msg = MIMEText(body)
     msg['Subject'] = subject
@@ -48,13 +48,20 @@ def home():
             settings_sheet = sheet.worksheet("Settings")
             settings_data = settings_sheet.get_all_records()
             details = {item['Setting Name']: item['Value'] for item in settings_data if item.get('Setting Name')}
+            
+            # Convert 'Pickup Windows' string to a list for the dropdown
+            if details.get('Pickup Windows'):
+                details['window_list'] = [w.strip() for w in details['Pickup Windows'].split(',')]
+            else:
+                details['window_list'] = []
+                
         except:
-            details = {'Next Bake Date': 'TBD'}
+            details = {'Next Bake Date': 'TBD', 'Store Status': 'Open', 'window_list': []}
 
         return render_template('index.html', items=visible_items, details=details)
     except Exception as e:
         print(f"BAKERY_ERROR: {e}")
-        return render_template('index.html', items=[], details={'Next Bake Date': 'Updating Soon'})
+        return render_template('index.html', items=[], details={'Next Bake Date': 'Updating Soon', 'Store Status': 'Open'})
 
 @app.route('/submit', methods=['POST'])
 def submit():
@@ -62,18 +69,20 @@ def submit():
         name = request.form.get('name')
         phone = request.form.get('contact')
         bread = request.form.get('bread')
+        pickup_window = request.form.get('pickup_window') # New field
         notes = request.form.get('notes')
         timestamp = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
         
         sheet = get_sheet()
         order_sheet = sheet.worksheet("Orders")
+        # Added pickup_window to the row
         order_sheet.append_row(
-            [timestamp, name, phone, bread, notes, 'New'], 
+            [timestamp, name, phone, bread, pickup_window, notes, 'New'], 
             value_input_option='USER_ENTERED'
         )
         
-        # Admin Alert
-        admin_body = f"New order received for {bread}.\n\nNotes: {notes}\nContact: {phone}"
+        # Admin Alert with new window details
+        admin_body = f"New order: {bread}\nWindow: {pickup_window}\nNotes: {notes}\nContact: {phone}"
         send_email(f"🍞 New Aiara Order: {name}", admin_body, "breadbygreg@gmail.com")
         
         settings_sheet = sheet.worksheet("Settings")
