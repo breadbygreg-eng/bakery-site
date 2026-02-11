@@ -55,11 +55,15 @@ def submit():
         # 2. Generate Real-Time Timestamp
         timestamp = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
         
-        # 3. Log Order
+       # 3. Log Order
         sheet = get_sheet()
         order_sheet = sheet.worksheet("Orders")
-        # Matches Spreadsheet: Timestamp, Name, Phone, Bread, Notes, Status
-        order_sheet.append_row([timestamp, name, phone, bread, notes, 'New'])
+        
+        # We add 'value_input_option' to remove that apostrophe
+        order_sheet.append_row(
+            [timestamp, name, phone, bread, notes, 'New'], 
+            value_input_option='USER_ENTERED'
+        )
         
         # 4. Fetch Details for Success Page
         settings_sheet = sheet.worksheet("Settings")
