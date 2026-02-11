@@ -160,79 +160,118 @@
             <span class="bake-day-label">Next Bake & Pickup:</span>
             <div class="bake-day-value">{{ details['Next Bake Date'] }}</div>
         </div>
-
-        <div class="menu-section">
-            <h2>This Week's Menu</h2>
-            {% for item in items %}
-            <div class="item">
-                <div>
-                    <strong>{{ item['Item Name'] }}</strong>
-                    {% if item['Remaining']|int <= 0 %}
-                        <span class="status-badge sold-out">SOLD OUT</span>
-                    {% elif item['Remaining']|int <= 3 %}
-                        <span class="status-badge low-stock">🔥 ONLY {{ item['Remaining'] }} LEFT!</span>
-                    {% endif %}
-                    <br><small style="color: #666;">{{ item['Description'] }}</small>
-                </div>
-                <div style="font-weight: bold;">${{ item['Price'] }}</div>
-            </div>
-            {% endfor %}
+<div class="menu-section">
+    <h2>This Week's Menu</h2>
+    {% for item in items %}
+    <div class="item">
+        <div style="flex-grow: 1;">
+            <strong>{{ item['Item Name'] }}</strong>
+            {% if item['Remaining']|int <= 0 %}
+                <span class="status-badge sold-out">SOLD OUT</span>
+            {% elif item['Remaining']|int <= 3 %}
+                <span class="status-badge low-stock">🔥 ONLY {{ item['Remaining'] }} LEFT!</span>
+            {% endif %}
+            <br><small style="color: #666;">{{ item['Description'] }}</small>
         </div>
-
-        <div class="order-form">
-            {% if details['Store Status'] == 'Closed' %}
-                <div style="text-align: center; padding: 20px;">
-                    <h2 style="font-family: 'Playfair Display', serif; margin-top: 0;">Oven is Resting</h2>
-                    <p>We are currently not taking new reservations. Please join our "Notify Me" list below to be alerted for the next bake!</p>
-                </div>
-            {% else %}
-                <h2 style="font-family: 'Playfair Display', serif; margin-top: 0;">Reserve Your Loaf</h2>
-                <form action="/submit" method="POST">
-                    <label for="name">Name</label>
-                    <input type="text" id="name" name="name" required>
-
-                    <label for="contact">Email or Phone</label>
-                    <input type="text" id="contact" name="contact" required>
-
-                    <label for="bread">Bread Selection</label>
-                    <select id="bread" name="bread" required>
-                        <option value="" disabled selected>Select a loaf...</option>
-                        {% for item in items %}
-                            <option value="{{ item['Item Name'] }}" {% if item['Remaining']|int <= 0 %}disabled{% endif %}>
-                                {{ item['Item Name'] }} {% if item['Remaining']|int <= 0 %}(Sold Out){% endif %}
-                            </option>
-                        {% endfor %}
-                    </select>
-
-                    <label for="pickup_window">Pickup Window</label>
-                    <select id="pickup_window" name="pickup_window" required>
-                        <option value="" disabled selected>Choose a time...</option>
+        <div style="text-align: right; min-width: 120px;">
+            <span style="font-weight: bold; margin-right: 15px;">${{ item['Price'] }}</span>
+            {% if item['Remaining']|int > 0 %}
+                <input type="number" name="qty_{{ item['Item Name'] }}" min="0" max="{{ item['Remaining'] }}" value="0" 
+                       style="width: 50px; padding: 5px; margin-bottom: 0; background: white; color: black; border: 1px solid #ddd;">
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+    
+    <div class="order-form">
+        {% if details['Store Status'] == 'Closed' %}
+            <div style="text-align: center; padding: 20px;">
+                <h2>Oven is Resting</h2>
+                <p>We are currently not taking new reservations.</p>
+            </div>
+        {% else %}
+            <h2 style="font-family: 'Playfair Display', serif; margin-top: 0;">Finalize Reservation</h2>
+            <form action="/submit" method="POST" id="reservationForm">
+                <input type="hidden" name="order_summary" id="orderSummary">
+    
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" required>
+    
+                <label for="contact">Email or Phone</label>
+                <input type="text" id="contact" name="contact" required>
+    
+                <label for="logistics">How will you get your bread?</label>
+                <select id="logistics" name="logistics" required onchange="toggleLogistics()">
+                    <option value="" disabled selected>Select an option...</option>
+                    <option value="Clarksburg Pickup">I am a Clarksburg Resident (Pickup)</option>
+                    <option value="School Delivery">I am a Parent at the School (Delivery)</option>
+                    <option value="Other">I live elsewhere / Other</option>
+                </select>
+    
+                <div id="pickupArea" style="display:none; margin-bottom: 20px; background: rgba(255,255,255,0.1); padding: 15px;">
+                    <label>Select Pickup Time:</label>
+                    <select name="pickup_window">
                         {% for window in details['window_list'] %}
                             <option value="{{ window }}">{{ window }}</option>
                         {% endfor %}
                     </select>
-
-                    <label for="notes">Notes</label>
-                    <textarea id="notes" name="notes" rows="2" placeholder="Any special requests?"></textarea>
-                    
-                    <button type="submit">Submit Reservation</button>
-                </form>
-            {% endif %}
-        </div>
+                </div>
+    
+                <div id="schoolArea" style="display:none; margin-bottom: 20px; background: rgba(255,255,255,0.1); padding: 15px;">
+                    <p style="font-size: 0.9rem;"><strong>Delivery Info:</strong> {{ details['School Delivery Info'] }}</p>
+                </div>
+    
+                <div id="otherArea" style="display:none; margin-bottom: 20px; background: rgba(255,255,255,0.1); padding: 15px;">
+                    <label>Where are you located?</label>
+                    <input type="text" name="other_location" placeholder="e.g. Frederick, Germantown...">
+                    <p style="font-size: 0.8rem; font-style: italic;">We're expanding! We'll reach out if we can coordinate a drop-off.</p>
+                </div>
+    
+                <div style="margin-bottom: 20px; display: flex; align-items: center;">
+                    <input type="checkbox" name="subscription" id="subscription" style="width: 20px; margin-right: 10px; margin-bottom: 0;">
+                    <label for="subscription" style="margin-bottom: 0;">Make this a weekly subscription?</label>
+                </div>
+    
+                <label for="notes">Notes</label>
+                <textarea id="notes" name="notes" rows="2"></textarea>
+                
+                <button type="submit" id="submitBtn">Submit Reservation</button>
+            </form>
+        {% endif %}
     </div>
-
+    
     <script>
-        const orderForm = document.querySelector('form');
-        const submitButton = orderForm.querySelector('button');
+function toggleLogistics() {
+    const val = document.getElementById('logistics').value;
+    document.getElementById('pickupArea').style.display = val === 'Clarksburg Pickup' ? 'block' : 'none';
+    document.getElementById('schoolArea').style.display = val === 'School Delivery' ? 'block' : 'none';
+    document.getElementById('otherArea').style.display = val === 'Other' ? 'block' : 'none';
+}
 
-        orderForm.addEventListener('submit', function() {
-            submitButton.disabled = true;
-            submitButton.innerText = 'Processing Reservation...';
-            submitButton.style.opacity = '0.7';
-            submitButton.style.cursor = 'not-allowed';
-        });
-    </script>
+document.getElementById('reservationForm').addEventListener('submit', function(e) {
+    // Prevent double submit
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('submitBtn').innerText = 'Processing...';
 
+    // Aggregate quantities into the hidden summary field
+    let summary = [];
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        if (parseInt(input.value) > 0) {
+            summary.push(input.value + "x " + input.name.replace('qty_', ''));
+        }
+    });
+    document.getElementById('orderSummary').value = summary.join(', ');
+    
+    if (summary.length === 0) {
+        alert("Please select at least one loaf!");
+        e.preventDefault();
+        document.getElementById('submitBtn').disabled = false;
+        document.getElementById('submitBtn').innerText = 'Submit Reservation';
+    }
+});
+</script>
 </body>
 </html>
+
 
