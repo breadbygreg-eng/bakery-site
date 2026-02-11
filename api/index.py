@@ -35,25 +35,29 @@ def submit():
     try:
         # 1. Capture Form Data
         name = request.form.get('name')
-        phone = request.form.get('phone')
+        phone = request.form.get('contact') # Matches the 'name' attribute in your HTML
         bread = request.form.get('bread')
         notes = request.form.get('notes')
         
-        # 2. Log Order to Google Sheets
+        # 2. Generate Real-Time Timestamp (Clarksburg local time)
+        # Format: 02/11/2026 13:45:00
+        timestamp = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
+        
+        # 3. Log Order to Google Sheets
+        # The order below matches your spreadsheet columns: Timestamp, Name, Phone, Bread...
         sheet = get_sheet()
         order_sheet = sheet.worksheet("Orders")
-        order_sheet.append_row([name, phone, bread, notes, 'New'])
+        order_sheet.append_row([timestamp, name, phone, bread, notes, 'New'])
         
-        # 3. Fetch Pickup Details from 'Settings' tab
+        # 4. Fetch Pickup Details from 'Settings' tab
         settings_sheet = sheet.worksheet("Settings")
         settings = settings_sheet.get_all_records()
         
         # Convert list of dicts to a simple dictionary for easy access
-        # This turns it into: {'Pickup Instructions': 'Thursday...', 'Delivery Info': 'Friday...'}
         details = {item['Setting Name']: item['Value'] for item in settings}
         
         return render_template('success.html', name=name, details=details)
-        
+    
     except Exception as e:
-        print(f"SUBMIT_ERROR: {e}")
-        return "Order logged, but there was a glitch showing the confirmation. Don't worry, Greg has your order!"
+        print(f"Error submitting order: {e}")
+        return "There was an issue processing your reservation. Please try again or contact us directly."
