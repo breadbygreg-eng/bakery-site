@@ -1,12 +1,7 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/static/(.*)", "destination": "/static/$1" },
+    { "source": "/public/(.*)", "destination": "/public/$1" },
     { "source": "/(.*)", "destination": "/api/index" }
-  ],
-  "functions": {
-    "api/index.py": {
-      "runtime": "vercel-python@0.0.6"
-    }
-  }
+  ]
 }
