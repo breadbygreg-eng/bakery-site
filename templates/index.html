@@ -180,29 +180,44 @@
         </div>
 
         <div class="order-form">
-            <h2 style="font-family: 'Playfair Display', serif; margin-top: 0;">Reserve Your Loaf</h2>
-            <form action="/submit" method="POST">
-                <label for="name">Name</label>
-                <input type="text" id="name" name="name" required>
+            {% if details['Store Status'] == 'Closed' %}
+                <div style="text-align: center; padding: 20px;">
+                    <h2 style="font-family: 'Playfair Display', serif; margin-top: 0;">Oven is Resting</h2>
+                    <p>We are currently not taking new reservations. Please join our "Notify Me" list below to be alerted for the next bake!</p>
+                </div>
+            {% else %}
+                <h2 style="font-family: 'Playfair Display', serif; margin-top: 0;">Reserve Your Loaf</h2>
+                <form action="/submit" method="POST">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" required>
 
-                <label for="contact">Email or Phone</label>
-                <input type="text" id="contact" name="contact" required>
+                    <label for="contact">Email or Phone</label>
+                    <input type="text" id="contact" name="contact" required>
 
-                <label for="bread">Bread Selection</label>
-                <select id="bread" name="bread" required>
-                    <option value="" disabled selected>Select a loaf...</option>
-                    {% for item in items %}
-                        <option value="{{ item['Item Name'] }}" {% if item['Remaining']|int <= 0 %}disabled{% endif %}>
-                            {{ item['Item Name'] }} {% if item['Remaining']|int <= 0 %}(Sold Out){% endif %}
-                        </option>
-                    {% endfor %}
-                </select>
+                    <label for="bread">Bread Selection</label>
+                    <select id="bread" name="bread" required>
+                        <option value="" disabled selected>Select a loaf...</option>
+                        {% for item in items %}
+                            <option value="{{ item['Item Name'] }}" {% if item['Remaining']|int <= 0 %}disabled{% endif %}>
+                                {{ item['Item Name'] }} {% if item['Remaining']|int <= 0 %}(Sold Out){% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
 
-                <label for="notes">Notes</label>
-                <textarea id="notes" name="notes" rows="2" placeholder="Requested pickup time..."></textarea>
-                
-                <button type="submit">Submit Reservation</button>
-            </form>
+                    <label for="pickup_window">Pickup Window</label>
+                    <select id="pickup_window" name="pickup_window" required>
+                        <option value="" disabled selected>Choose a time...</option>
+                        {% for window in details['window_list'] %}
+                            <option value="{{ window }}">{{ window }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <label for="notes">Notes</label>
+                    <textarea id="notes" name="notes" rows="2" placeholder="Any special requests?"></textarea>
+                    
+                    <button type="submit">Submit Reservation</button>
+                </form>
+            {% endif %}
         </div>
     </div>
 
@@ -220,3 +235,4 @@
 
 </body>
 </html>
+
