@@ -60,7 +60,6 @@
             margin-top: 5px;
         }
 
-        /* --- THE NUDGE: Bake Day Banner --- */
         .bake-day-banner {
             text-align: center;
             background: #fdfaf5;
@@ -85,7 +84,6 @@
             color: #333;
         }
 
-        /* --- Menu Section --- */
         .menu-section h2 { font-family: 'Playfair Display', serif; color: var(--primary-brown); }
         
         .item { 
@@ -105,7 +103,6 @@
         .sold-out { color: var(--alert-red); }
         .low-stock { color: var(--accent-gold); }
 
-        /* --- Order Form --- */
         .order-form { 
             margin-top: 40px; 
             background: var(--primary-brown); 
@@ -170,13 +167,11 @@
             <div class="item">
                 <div>
                     <strong>{{ item['Item Name'] }}</strong>
-                    
                     {% if item['Remaining']|int <= 0 %}
                         <span class="status-badge sold-out">SOLD OUT</span>
                     {% elif item['Remaining']|int <= 3 %}
                         <span class="status-badge low-stock">🔥 ONLY {{ item['Remaining'] }} LEFT!</span>
                     {% endif %}
-
                     <br><small style="color: #666;">{{ item['Description'] }}</small>
                 </div>
                 <div style="font-weight: bold;">${{ item['Price'] }}</div>
@@ -210,6 +205,18 @@
             </form>
         </div>
     </div>
+
+    <script>
+        const orderForm = document.querySelector('form');
+        const submitButton = orderForm.querySelector('button');
+
+        orderForm.addEventListener('submit', function() {
+            submitButton.disabled = true;
+            submitButton.innerText = 'Processing Reservation...';
+            submitButton.style.opacity = '0.7';
+            submitButton.style.cursor = 'not-allowed';
+        });
+    </script>
 
 </body>
 </html>
