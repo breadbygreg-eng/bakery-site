@@ -88,6 +88,12 @@
         <h1>Fresh Bread Incoming!</h1>
         <p>Thanks, <strong>{{ name }}</strong>. We've received your order and added it to the bake list.</p>
         
+        {% if is_late %}
+        <div style="background: #fff5f5; border: 1px solid #feb2b2; padding: 15px; margin-bottom: 20px; border-radius: 4px; color: #9b2c2c; font-size: 0.9rem; text-align: left;">
+            <strong>Notice:</strong> The oven is already at temperature! Because your order arrived after our current bake cycle was finalized, we have prioritized your <strong>order</strong> for our <strong>next</strong> upcoming bake day. We appreciate your <strong>patience</strong>.
+        </div>
+        {% endif %}
+
         <div class="details">
             <h3>Logistics for this Week:</h3>
             <p><strong>Pickup:</strong> {{ details['Pickup Instructions'] }}</p>
