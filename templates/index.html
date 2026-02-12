@@ -57,20 +57,36 @@
             padding: 15px 0; 
             border-bottom: 1px solid #eee;
         }
+/* Vertical Centering Fix for Menu Items */
+.qty-row {
+    display: flex;
+    align-items: center; /* Forces all children to the vertical center */
+    justify-content: flex-end;
+    min-width: 150px;
+}
 
-        .qty-row {
-            display: flex;
-            align-items: center; /* Vertical centering */
-            justify-content: flex-end;
-            min-width: 150px;
-        }
+.price-tag {
+    font-weight: bold;
+    margin-right: 15px;
+    color: var(--primary-brown);
+    /* Removed line-height to let flexbox handle verticality */
+    display: flex;
+    align-items: center;
+    margin: 0 15px 0 0; /* Reset margins to ensure no hidden pushing */
+}
 
-        .price-tag {
-            font-weight: bold;
-            margin-right: 15px;
-            color: var(--primary-brown);
-            line-height: 38px; /* Matches dropdown height for perfect centering */
-        }
+.qty-select {
+    width: 70px;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    height: 38px;
+    font-weight: bold;
+    margin: 0; /* Clear default browser margins that cause shifts */
+    background: #fff;
+    color: #333;
+    cursor: pointer;
+}
 
         .status-badge { font-size: 0.7rem; padding: 2px 6px; border-radius: 3px; font-weight: bold; margin-left: 5px; }
         .low-stock { background: #fff5f5; color: #c53030; border: 1px solid #feb2b2; }
@@ -245,3 +261,4 @@
     </script>
 </body>
 </html>
+
