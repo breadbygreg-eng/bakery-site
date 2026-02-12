@@ -61,38 +61,49 @@ def home():
         # This is what you see in the screenshot! 
         # It triggers if a Tab Name or Column Header is misspelled.
         return render_template('index.html', items=[], details={'Next Bake Date': 'Updating Soon', 'Store Status': 'Open'})
+
 @app.route('/submit', methods=['POST'])
 def submit():
     try:
-        # 1. Capture Form Data
+        # 1. Capture Form Data (Same as before)
         name = request.form.get('name')
         contact = request.form.get('contact')
         logistics = request.form.get('logistics')
         pickup_window = request.form.get('pickup_window', 'N/A')
         other_location = request.form.get('other_location', '')
         subscription = "Yes" if request.form.get('subscription') else "No"
-        order_summary = request.form.get('order_summary') # "2x Country, 1x WW"
+        order_summary = request.form.get('order_summary')
         notes = request.form.get('notes')
-        timestamp = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
-
-        # 2. Log Order to Google Sheets
+        timestamp = datetime.now() # Captured as object for comparison
+        
+        # 2. Log Order
         sheet = get_sheet()
         order_sheet = sheet.worksheet("Orders")
-        # Column Order: Timestamp, Name, Contact, Order, Logistics, Details, Subscription, Notes
         order_sheet.append_row(
-            [timestamp, name, contact, order_summary, logistics, f"{pickup_window} {other_location}", subscription, notes], 
+            [timestamp.strftime("%m/%d/%Y %H:%M:%S"), name, contact, order_summary, logistics, f"{pickup_window} {other_location}", subscription, notes], 
             value_input_option='USER_ENTERED'
         )
-        
-        # 3. Enhanced Admin Alert
-        admin_body = (f"🍞 NEW ORDER: {name}\n"
-                      f"Items: {order_summary}\n"
-                      f"Logistics: {logistics} ({pickup_window}{other_location})\n"
-                      f"Subscription: {subscription}\n"
-                      f"Notes: {notes}")
+
+        # 3. Fetch Settings for Comparison
+        settings_sheet = sheet.worksheet("Settings")
+        settings = settings_sheet.get_all_records()
+        details = {item['Setting Name']: item['Value'] for item in settings}
+
+        # --- LATE ORDER LOGIC ---
+        is_late = False
+        try:
+            # Assumes 'Next Bake Date' is in MM/DD/YYYY format in your Sheet
+            bake_date = datetime.strptime(details.get('Next Bake Date'), "%m/%d/%Y")
+            if timestamp > bake_date:
+                is_late = True
+        except:
+            pass # Safe fallback if date parsing fails
+
+        # 4. Admin Alert
+        admin_body = f"New order: {order_summary}\nLate Order: {is_late}\nLogistics: {logistics}"
         send_email(f"Aiara Order: {name}", admin_body, "breadbygreg@gmail.com")
         
-        return render_template('success.html', name=name, details={'Pickup Instructions': 'See your logistics choice for details.'})
+        return render_template('success.html', name=name, details=details, is_late=is_late)
     except Exception as e:
         print(f"Error: {e}")
         return "Submission error."
