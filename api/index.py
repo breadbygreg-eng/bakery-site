@@ -40,19 +40,15 @@ def send_email(subject, body, recipient):
 def home():
     try:
         sheet = get_sheet()
-        
-        # Step 1: Attempt to open the "Menu" tab
         menu_sheet = sheet.worksheet("Menu")
         items = menu_sheet.get_all_records()
         
-        # Step 2: Filter for 'Active' items
+        # Filter for 'Active' status (Case Sensitive)
         visible_items = [i for i in items if i.get('Status') == 'Active']
         
-        # Step 3: Attempt to open the "Settings" tab
         settings_sheet = sheet.worksheet("Settings")
         settings_data = settings_sheet.get_all_records()
-        
-        # Map Settings into a dictionary
+        # Filter empty rows to prevent crashes
         details = {item['Setting Name']: item['Value'] for item in settings_data if item.get('Setting Name')}
         
         if details.get('Pickup Windows'):
@@ -61,14 +57,12 @@ def home():
         return render_template('index.html', items=visible_items, details=details)
 
     except Exception as e:
-        # This replaces the "Updating Soon" banner with the raw system error
-        import traceback
-        error_details = traceback.format_exc()
-        return f"<h1>DEBUG ERROR</h1><p>Aiara Bakery site is currently unable to read your Google Sheet.</p><pre>{error_details}</pre>"
+        print(f"BAKERY_ERROR: {e}")
+        return render_template('index.html', items=[], details={'Next Bake Date': 'Updating Soon', 'Store Status': 'Open'})
+
 @app.route('/submit', methods=['POST'])
 def submit():
     try:
-        # 1. Capture Form Data (Same as before)
         name = request.form.get('name')
         contact = request.form.get('contact')
         logistics = request.form.get('logistics')
@@ -77,37 +71,35 @@ def submit():
         subscription = "Yes" if request.form.get('subscription') else "No"
         order_summary = request.form.get('order_summary')
         notes = request.form.get('notes')
-        timestamp = datetime.now() # Captured as object for comparison
-        
-        # 2. Log Order
+        timestamp = datetime.now()
+
         sheet = get_sheet()
         order_sheet = sheet.worksheet("Orders")
+        # Column Order: Timestamp, Name, Contact, Order, Logistics, Details, Subscription, Notes
         order_sheet.append_row(
             [timestamp.strftime("%m/%d/%Y %H:%M:%S"), name, contact, order_summary, logistics, f"{pickup_window} {other_location}", subscription, notes], 
             value_input_option='USER_ENTERED'
         )
 
-        # 3. Fetch Settings for Comparison
         settings_sheet = sheet.worksheet("Settings")
         settings = settings_sheet.get_all_records()
         details = {item['Setting Name']: item['Value'] for item in settings if item.get('Setting Name')}
-        # --- LATE ORDER LOGIC ---
+
+        # Late Order logic
         is_late = False
         try:
-            # Assumes 'Next Bake Date' is in MM/DD/YYYY format in your Sheet
             bake_date = datetime.strptime(details.get('Next Bake Date'), "%m/%d/%Y")
             if timestamp > bake_date:
                 is_late = True
         except:
-            pass # Safe fallback if date parsing fails
+            pass
 
-        # 4. Admin Alert
-        admin_body = f"New order: {order_summary}\nLate Order: {is_late}\nLogistics: {logistics}"
+        admin_body = f"🍞 NEW ORDER: {name}\nItems: {order_summary}\nLogistics: {logistics}\nLate: {is_late}"
         send_email(f"Aiara Order: {name}", admin_body, "breadbygreg@gmail.com")
         
         return render_template('success.html', name=name, details=details, is_late=is_late)
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Submission error: {e}")
         return "Submission error."
 
 @app.route('/subscribe', methods=['POST'])
@@ -115,30 +107,15 @@ def subscribe():
     try:
         contact = request.form.get('sub_contact')
         timestamp = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
-        
         sheet = get_sheet()
         sub_sheet = sheet.worksheet("Subscribers")
         sub_sheet.append_row([timestamp, contact, 'Active'], value_input_option='USER_ENTERED')
         
         if "@" in contact:
-            welcome_body = "Welcome to Aiara Bakery!\n\nYou'll be the first to know when our sourdough oven is preheated.\n\nTo stop receiving these, visit: aiarabakery.com/unsubscribe"
+            welcome_body = "Welcome to Aiara Bakery!\n\nYou'll be the first to know when the oven is preheated."
             send_email("🍞 You're on the Aiara Bake List!", welcome_body, contact)
         
-        return "<h3>You're on the list!</h3><p>We'll notify you when the next bake begins.</p><a href='/'>Back to Menu</a>"
+        return "<h3>Success!</h3><p>You're on the list.</p><a href='/'>Back to Menu</a>"
     except Exception as e:
         print(f"Subscription Error: {e}")
-        return "Could not add to list. Please try again later."
-
-@app.route('/unsubscribe', methods=['GET', 'POST'])
-def unsubscribe():
-    if request.method == 'POST':
-        contact = request.form.get('contact')
-        try:
-            sheet = get_sheet()
-            sub_sheet = sheet.worksheet("Subscribers")
-            cell = sub_sheet.find(contact)
-            sub_sheet.update_cell(cell.row, 3, 'Unsubscribed')
-            return "<h3>You have been unsubscribed.</h3><p>We're sorry to see you go!</p>"
-        except:
-            return "Contact not found on our list."
-    return render_template('unsubscribe.html')
+        return "Subscription error."
