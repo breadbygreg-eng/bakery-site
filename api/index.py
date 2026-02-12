@@ -37,18 +37,23 @@ def send_email(subject, body, recipient):
 # --- Routes ---
 
 @app.route('/')
+@app.route('/')
 def home():
     try:
         sheet = get_sheet()
-        # Ensure the tab name is exactly "Menu"
+        
+        # Step 1: Attempt to open the "Menu" tab
         menu_sheet = sheet.worksheet("Menu")
         items = menu_sheet.get_all_records()
         
-        # Check: The word 'Active' must be exactly the same in Column E
+        # Step 2: Filter for 'Active' items
         visible_items = [i for i in items if i.get('Status') == 'Active']
         
+        # Step 3: Attempt to open the "Settings" tab
         settings_sheet = sheet.worksheet("Settings")
         settings_data = settings_sheet.get_all_records()
+        
+        # Map Settings into a dictionary
         details = {item['Setting Name']: item['Value'] for item in settings_data if item.get('Setting Name')}
         
         if details.get('Pickup Windows'):
@@ -57,11 +62,10 @@ def home():
         return render_template('index.html', items=visible_items, details=details)
 
     except Exception as e:
-        print(f"BAKERY_ERROR: {e}")
-        # This is what you see in the screenshot! 
-        # It triggers if a Tab Name or Column Header is misspelled.
-        return render_template('index.html', items=[], details={'Next Bake Date': 'Updating Soon', 'Store Status': 'Open'})
-
+        # This replaces the "Updating Soon" banner with the raw system error
+        import traceback
+        error_details = traceback.format_exc()
+        return f"<h1>DEBUG ERROR</h1><p>Aiara Bakery site is currently unable to read your Google Sheet.</p><pre>{error_details}</pre>"
 @app.route('/submit', methods=['POST'])
 def submit():
     try:
