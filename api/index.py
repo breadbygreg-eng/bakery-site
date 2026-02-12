@@ -40,29 +40,27 @@ def send_email(subject, body, recipient):
 def home():
     try:
         sheet = get_sheet()
+        # Ensure the tab name is exactly "Menu"
         menu_sheet = sheet.worksheet("Menu")
         items = menu_sheet.get_all_records()
+        
+        # Check: The word 'Active' must be exactly the same in Column E
         visible_items = [i for i in items if i.get('Status') == 'Active']
         
-        try:
-            settings_sheet = sheet.worksheet("Settings")
-            settings_data = settings_sheet.get_all_records()
-            details = {item['Setting Name']: item['Value'] for item in settings_data if item.get('Setting Name')}
-            
-            # Convert 'Pickup Windows' string to a list for the dropdown
-            if details.get('Pickup Windows'):
-                details['window_list'] = [w.strip() for w in details['Pickup Windows'].split(',')]
-            else:
-                details['window_list'] = []
-                
-        except:
-            details = {'Next Bake Date': 'TBD', 'Store Status': 'Open', 'window_list': []}
-
+        settings_sheet = sheet.worksheet("Settings")
+        settings_data = settings_sheet.get_all_records()
+        details = {item['Setting Name']: item['Value'] for item in settings_data if item.get('Setting Name')}
+        
+        if details.get('Pickup Windows'):
+            details['window_list'] = [w.strip() for w in details['Pickup Windows'].split(',')]
+        
         return render_template('index.html', items=visible_items, details=details)
+
     except Exception as e:
         print(f"BAKERY_ERROR: {e}")
+        # This is what you see in the screenshot! 
+        # It triggers if a Tab Name or Column Header is misspelled.
         return render_template('index.html', items=[], details={'Next Bake Date': 'Updating Soon', 'Store Status': 'Open'})
-
 @app.route('/submit', methods=['POST'])
 def submit():
     try:
