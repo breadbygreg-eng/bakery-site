@@ -66,33 +66,38 @@ def home():
 @app.route('/submit', methods=['POST'])
 def submit():
     try:
+        # 1. Capture Form Data
         name = request.form.get('name')
-        phone = request.form.get('contact')
-        bread = request.form.get('bread')
-        pickup_window = request.form.get('pickup_window') # New field
+        contact = request.form.get('contact')
+        logistics = request.form.get('logistics')
+        pickup_window = request.form.get('pickup_window', 'N/A')
+        other_location = request.form.get('other_location', '')
+        subscription = "Yes" if request.form.get('subscription') else "No"
+        order_summary = request.form.get('order_summary') # "2x Country, 1x WW"
         notes = request.form.get('notes')
         timestamp = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
-        
+
+        # 2. Log Order to Google Sheets
         sheet = get_sheet()
         order_sheet = sheet.worksheet("Orders")
-        # Added pickup_window to the row
+        # Column Order: Timestamp, Name, Contact, Order, Logistics, Details, Subscription, Notes
         order_sheet.append_row(
-            [timestamp, name, phone, bread, pickup_window, notes, 'New'], 
+            [timestamp, name, contact, order_summary, logistics, f"{pickup_window} {other_location}", subscription, notes], 
             value_input_option='USER_ENTERED'
         )
         
-        # Admin Alert with new window details
-        admin_body = f"New order: {bread}\nWindow: {pickup_window}\nNotes: {notes}\nContact: {phone}"
-        send_email(f"🍞 New Aiara Order: {name}", admin_body, "breadbygreg@gmail.com")
+        # 3. Enhanced Admin Alert
+        admin_body = (f"🍞 NEW ORDER: {name}\n"
+                      f"Items: {order_summary}\n"
+                      f"Logistics: {logistics} ({pickup_window}{other_location})\n"
+                      f"Subscription: {subscription}\n"
+                      f"Notes: {notes}")
+        send_email(f"Aiara Order: {name}", admin_body, "breadbygreg@gmail.com")
         
-        settings_sheet = sheet.worksheet("Settings")
-        settings = settings_sheet.get_all_records()
-        details = {item['Setting Name']: item['Value'] for item in settings}
-        
-        return render_template('success.html', name=name, details=details)
+        return render_template('success.html', name=name, details={'Pickup Instructions': 'See your logistics choice for details.'})
     except Exception as e:
-        print(f"Error submitting order: {e}")
-        return "There was an issue processing your reservation."
+        print(f"Error: {e}")
+        return "Submission error."
 
 @app.route('/subscribe', methods=['POST'])
 def subscribe():
