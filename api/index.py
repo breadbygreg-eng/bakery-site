@@ -37,7 +37,6 @@ def send_email(subject, body, recipient):
 # --- Routes ---
 
 @app.route('/')
-@app.route('/')
 def home():
     try:
         sheet = get_sheet()
