@@ -87,8 +87,7 @@ def submit():
         # 3. Fetch Settings for Comparison
         settings_sheet = sheet.worksheet("Settings")
         settings = settings_sheet.get_all_records()
-        details = {item['Setting Name']: item['Value'] for item in settings}
-
+        details = {item['Setting Name']: item['Value'] for item in settings if item.get('Setting Name')}
         # --- LATE ORDER LOGIC ---
         is_late = False
         try:
