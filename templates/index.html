@@ -239,12 +239,13 @@
     </div>
 
     <script>
-        function toggleLogistics() {
-            const val = document.getElementById('logistics').value;
-            document.getElementById('pickupArea').style.display = val === 'Clarksburg Resident (Pickup)' ? 'block' : 'none';
-            document.getElementById('schoolArea').style.display = val === 'WWS (Pickup)' ? 'block' : 'none';
-            document.getElementById('otherArea').style.display = val === 'Other' ? 'block' : 'none';
-        }
+    function toggleLogistics() {
+        const val = document.getElementById('logistics').value;
+        document.getElementById('pickupArea').style.display = val === 'Clarksburg Resident (Pickup)' ? 'block' : 'none';
+        // Update the line below to match "WWS (Pickup)"
+        document.getElementById('schoolArea').style.display = val === 'WWS (Pickup)' ? 'block' : 'none';
+        document.getElementById('otherArea').style.display = val === 'Other' ? 'block' : 'none';
+    }
 
         document.getElementById('orderForm').onsubmit = function() {
             let summary = [];
@@ -261,5 +262,6 @@
     </script>
 </body>
 </html>
+
 
 
