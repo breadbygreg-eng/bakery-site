@@ -9,19 +9,19 @@
         :root {
             --primary-brown: #5d4037;
             --accent-gold: #d4a373;
-            --bg-overlay: rgba(0, 0, 0, 0.6);
+            /* Brightened: Overlay reduced to 0.4 */
+            --bg-overlay: rgba(0, 0, 0, 0.4);
         }
 
-            body { 
-                margin: 0; 
-                font-family: 'Lato', sans-serif; 
-                /* The Fix: Path starts with / and we add a fallback color */
-                background: linear-gradient(var(--bg-overlay), var(--bg-overlay)), 
-                            #2d1b15 url('/Bread_Pile.jpg') no-repeat center center fixed;
-                background-size: cover;
-                color: white;
-                min-height: 100vh;
-            }
+        body { 
+            margin: 0; 
+            font-family: 'Lato', sans-serif; 
+            background: linear-gradient(var(--bg-overlay), var(--bg-overlay)), 
+                        #2d1b15 url('/Bread_Pile.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+            min-height: 100vh;
+        }
 
         .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
 
@@ -58,36 +58,35 @@
             padding: 15px 0; 
             border-bottom: 1px solid #eee;
         }
-/* Vertical Centering Fix for Menu Items */
-.qty-row {
-    display: flex;
-    align-items: center; /* Forces all children to the vertical center */
-    justify-content: flex-end;
-    min-width: 150px;
-}
 
-.price-tag {
-    font-weight: bold;
-    margin-right: 15px;
-    color: var(--primary-brown);
-    /* Removed line-height to let flexbox handle verticality */
-    display: flex;
-    align-items: center;
-    margin: 0 15px 0 0; /* Reset margins to ensure no hidden pushing */
-}
+        .qty-row {
+            display: flex;
+            align-items: center; 
+            justify-content: flex-end;
+            min-width: 150px;
+        }
 
-.qty-select {
-    width: 70px;
-    padding: 5px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    height: 38px;
-    font-weight: bold;
-    margin: 0; /* Clear default browser margins that cause shifts */
-    background: #fff;
-    color: #333;
-    cursor: pointer;
-}
+        .price-tag {
+            font-weight: bold;
+            margin-right: 15px;
+            color: var(--primary-brown);
+            display: flex;
+            align-items: center;
+            margin: 0 15px 0 0; 
+        }
+
+        .qty-select {
+            width: 70px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            height: 38px;
+            font-weight: bold;
+            margin: 0; 
+            background: #fff;
+            color: #333;
+            cursor: pointer;
+        }
 
         .status-badge { font-size: 0.7rem; padding: 2px 6px; border-radius: 3px; font-weight: bold; margin-left: 5px; }
         .low-stock { background: #fff5f5; color: #c53030; border: 1px solid #feb2b2; }
@@ -159,8 +158,7 @@
                 <div class="qty-row">
                     <span class="price-tag">${{ item['Price'] }}</span>
                     {% if item['Remaining']|int > 0 %}
-                        <select class="qty-select" data-name="{{ item['Item Name'] }}" 
-                                style="width: 70px; padding: 5px; border: 1px solid #ddd; border-radius: 4px; height: 38px; font-weight: bold;">
+                        <select class="qty-select" data-name="{{ item['Item Name'] }}">
                             <option value="0">0</option>
                             {% for i in range(1, 5) %}
                                 {% if i <= item['Remaining']|int %}<option value="{{ i }}">{{ i }}</option>{% endif %}
@@ -243,29 +241,22 @@
     function toggleLogistics() {
         const val = document.getElementById('logistics').value;
         document.getElementById('pickupArea').style.display = val === 'Clarksburg Resident (Pickup)' ? 'block' : 'none';
-        // Update the line below to match "WWS (Pickup)"
         document.getElementById('schoolArea').style.display = val === 'WWS (Pickup)' ? 'block' : 'none';
         document.getElementById('otherArea').style.display = val === 'Other' ? 'block' : 'none';
     }
 
-        document.getElementById('orderForm').onsubmit = function() {
-            let summary = [];
-            document.querySelectorAll('.qty-select').forEach(select => {
-                if (select.value > 0) summary.push(select.value + "x " + select.getAttribute('data-name'));
-            });
+    document.getElementById('orderForm').onsubmit = function() {
+        let summary = [];
+        document.querySelectorAll('.qty-select').forEach(select => {
+            if (select.value > 0) summary.push(select.value + "x " + select.getAttribute('data-name'));
+        });
 
-            if (summary.length === 0) { alert("Please select at least one loaf!"); return false; }
-            document.getElementById('orderSummary').value = summary.join(", ");
-            document.getElementById('submitBtn').disabled = true;
-            document.getElementById('submitBtn').innerText = "Processing...";
-            return true;
-        };
+        if (summary.length === 0) { alert("Please select at least one loaf!"); return false; }
+        document.getElementById('orderSummary').value = summary.join(", ");
+        document.getElementById('submitBtn').disabled = true;
+        document.getElementById('submitBtn').innerText = "Processing...";
+        return true;
+    };
     </script>
 </body>
 </html>
-
-
-
-
-
-
