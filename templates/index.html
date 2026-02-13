@@ -194,7 +194,7 @@
                     <select id="logistics" name="logistics" required onchange="toggleLogistics()">
                         <option value="" disabled selected>Select an option...</option>
                         <option value="Clarksburg Resident (Pickup)">Clarksburg Resident (Pickup)</option>
-                        <option value="WWS Parent (Pickup)">WWS Parent (Pickup)</option>
+                        <option value="WWS (Pickup)">WWS (Pickup)</option>
                         <option value="Other">Other</option>
                     </select>
 
@@ -242,7 +242,7 @@
         function toggleLogistics() {
             const val = document.getElementById('logistics').value;
             document.getElementById('pickupArea').style.display = val === 'Clarksburg Resident (Pickup)' ? 'block' : 'none';
-            document.getElementById('schoolArea').style.display = val === 'WWS Parent (Pickup)' ? 'block' : 'none';
+            document.getElementById('schoolArea').style.display = val === 'WWS (Pickup)' ? 'block' : 'none';
             document.getElementById('otherArea').style.display = val === 'Other' ? 'block' : 'none';
         }
 
@@ -261,4 +261,5 @@
     </script>
 </body>
 </html>
+
 
