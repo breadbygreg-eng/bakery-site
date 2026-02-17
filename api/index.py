@@ -3,7 +3,7 @@ import os
 import json
 import smtplib
 from email.mime.text import MIMEText
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 import gspread
 from google.oauth2.service_account import Credentials
 
@@ -17,13 +17,18 @@ def get_sheet():
     client = gspread.authorize(creds)
     return client.open_by_key(os.environ.get('GOOGLE_SHEET_ID'))
 
-# --- Helper: Email Notifications ---
-def send_email(subject, body, recipient):
+# --- Helper: Email Notifications with Unsubscribe Link ---
+def send_bakery_email(subject, body, recipient):
     sender = "breadbygreg@gmail.com"
     pw = os.environ.get('GMAIL_APP_PASSWORD')
-    msg = MIMEText(body)
+    
+    # Adding the compliant footer to every email
+    unsubscribe_url = f"https://aiarabakery.com/unsubscribe?email={recipient}"
+    footer = f"\n\n---\nYou are receiving this because you signed up at AiaraBakery.com.\nTo stop receiving these emails, click here: {unsubscribe_url}"
+    
+    msg = MIMEText(body + footer)
     msg['Subject'] = subject
-    msg['From'] = sender
+    msg['From'] = f"Aiara Bakery <{sender}>"
     msg['To'] = recipient
 
     try:
@@ -59,53 +64,74 @@ def home():
 def submit():
     try:
         name = request.form.get('name')
-        contact = request.form.get('contact').strip().lower() # Standardized for dedup
+        contact = request.form.get('contact').strip().lower()
         logistics = request.form.get('logistics')
         pickup_window = request.form.get('pickup_window', 'N/A')
         other_location = request.form.get('other_location', '')
         subscription_type = "Yes" if request.form.get('subscription') else "No"
-        join_list = request.form.get('join_list') # The new checkbox
+        join_list = request.form.get('join_list') 
         order_summary = request.form.get('order_summary')
         notes = request.form.get('notes')
         timestamp = datetime.now()
 
         sheet = get_sheet()
-        
-        # 1. Log the Order
         order_sheet = sheet.worksheet("Orders")
         order_sheet.append_row(
             [timestamp.strftime("%m/%d/%Y %H:%M:%S"), name, contact, order_summary, logistics, f"{pickup_window} {other_location}", subscription_type, notes], 
             value_input_option='USER_ENTERED'
         )
 
-        # 2. Handle Subscription Deduplication
+        # Handle deduplicated subscription
         if join_list:
             sub_sheet = sheet.worksheet("Subscribers")
             try:
-                # Check if email already exists in the sheet
                 sub_sheet.find(contact)
             except gspread.exceptions.CellNotFound:
-                # Only add if not found
                 sub_sheet.append_row([timestamp.strftime("%m/%d/%Y %H:%M:%S"), contact, 'Active'], value_input_option='USER_ENTERED')
-                welcome_body = "Welcome to the Aiara Bakery list! You'll receive our menu every week."
-                send_email("🍞 You're on the List!", welcome_body, contact)
+                welcome_body = "Welcome to the Aiara Bakery weekly menu distribution! Every week, you'll be the first to know what's coming out of our Tom Chandley oven."
+                send_bakery_email("🍞 You're on the Bake List!", welcome_body, contact)
 
-        # 3. Late Order Logic
-        settings_sheet = sheet.worksheet("Settings")
-        settings = settings_sheet.get_all_records()
-        details = {item['Setting Name']: item['Value'] for item in settings if item.get('Setting Name')}
-        is_late = False
-        try:
-            bake_date = datetime.strptime(details.get('Next Bake Date'), "%m/%d/%Y")
-            if timestamp > bake_date:
-                is_late = True
-        except:
-            pass
-
-        admin_body = f"🍞 NEW ORDER: {name}\nItems: {order_summary}\nLogistics: {logistics}\nLate: {is_late}"
-        send_email(f"Aiara Order: {name}", admin_body, "breadbygreg@gmail.com")
-        
-        return render_template('success.html', name=name, details=details, is_late=is_late)
+        return render_template('success.html', name=name)
     except Exception as e:
         print(f"Submission error: {e}")
         return "Submission error."
+
+@app.route('/unsubscribe')
+def unsubscribe():
+    email = request.args.get('email')
+    if not email:
+        return "<h3>Error</h3><p>No email provided.</p>"
+    
+    try:
+        sheet = get_sheet()
+        sub_sheet = sheet.worksheet("Subscribers")
+        cell = sub_sheet.find(email.strip().lower())
+        
+        # Updates the Status column (Column 3) to 'Unsubscribed'
+        sub_sheet.update_cell(cell.row, 3, 'Unsubscribed')
+        return f"<h3>Success</h3><p>{email} has been unsubscribed from our weekly menu distribution.</p>"
+    except gspread.exceptions.CellNotFound:
+        return "<h3>Not Found</h3><p>This email is not on our active list.</p>"
+    except Exception as e:
+        print(f"Unsubscribe Error: {e}")
+        return "<h3>Error</h3><p>An error occurred. Please contact us directly.</p>"
+
+@app.route('/subscribe', methods=['POST'])
+def subscribe():
+    try:
+        contact = request.form.get('sub_contact').strip().lower()
+        timestamp = datetime.now()
+        sheet = get_sheet()
+        sub_sheet = sheet.worksheet("Subscribers")
+        
+        try:
+            sub_sheet.find(contact)
+            return "<h3>Already on the list!</h3><p>You're all set to receive the next bake notification.</p><a href='/'>Back to Menu</a>"
+        except gspread.exceptions.CellNotFound:
+            sub_sheet.append_row([timestamp.strftime("%m/%d/%Y %H:%M:%S"), contact, 'Active'], value_input_option='USER_ENTERED')
+            welcome_body = "Thanks for joining the Aiara Bakery list! You'll receive our organic sourdough menu every week."
+            send_bakery_email("🍞 You're on the Bake List!", welcome_body, contact)
+            return "<h3>Success!</h3><p>You've been added to our distribution list.</p><a href='/'>Back to Menu</a>"
+    except Exception as e:
+        print(f"Subscription Error: {e}")
+        return "Subscription error."
