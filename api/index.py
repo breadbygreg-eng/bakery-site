@@ -1,11 +1,13 @@
 from datetime import datetime
 import os
 import json
-import smtplib
-from email.mime.text import MIMEText
 from flask import Flask, render_template, request, redirect, url_for
 import gspread
 from google.oauth2.service_account import Credentials
+
+# --- NEW: Brevo SDK Imports ---
+import sib_api_v3_sdk
+from sib_api_v3_sdk.rest import ApiException
 
 app = Flask(__name__, template_folder='../templates')
 
@@ -17,26 +19,46 @@ def get_sheet():
     client = gspread.authorize(creds)
     return client.open_by_key(os.environ.get('GOOGLE_SHEET_ID'))
 
-# --- Helper: Email Notifications with Unsubscribe Link ---
+# --- REPLACED: Professional Brevo Email Function ---
 def send_bakery_email(subject, body, recipient):
-    sender = "breadbygreg@gmail.com"
-    pw = os.environ.get('GMAIL_APP_PASSWORD')
+    # Setup Configuration using your Vercel Environment Variable
+    configuration = sib_api_v3_sdk.Configuration()
+    configuration.api_key['api-key'] = os.environ.get('BREVO_API_KEY')
     
-    # Adding the compliant footer to every email
+    api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
+    
+    # Define the Unsubscribe Footer
     unsubscribe_url = f"https://aiarabakery.com/unsubscribe?email={recipient}"
-    footer = f"\n\n---\nYou are receiving this because you signed up at AiaraBakery.com.\nTo stop receiving these emails, click here: {unsubscribe_url}"
-    
-    msg = MIMEText(body + footer)
-    msg['Subject'] = subject
-    msg['From'] = f"Aiara Bakery <{sender}>"
-    msg['To'] = recipient
+    html_content = f"""
+        <html>
+            <body style="font-family: sans-serif; line-height: 1.6; color: #333;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <p>{body.replace('\\n', '<br>')}</p>
+                    <br><br>
+                    <hr style="border: none; border-top: 1px solid #eee;">
+                    <small style="color: #888;">
+                        Sent from Aiara Bakery. To stop receiving these, 
+                        <a href="{unsubscribe_url}" style="color: #d4a373;">click here to unsubscribe</a>.
+                    </small>
+                </div>
+            </body>
+        </html>
+    """
+
+    # Create the Email Object (Must match your verified Zoho sender)
+    send_email = sib_api_v3_sdk.SendSmtpEmail(
+        to=[{"email": recipient}],
+        sender={"name": "Aiara Bakery", "email": "greg@aiarabakery.com"},
+        subject=subject,
+        html_content=html_content
+    )
 
     try:
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
-            server.login(sender, pw)
-            server.sendmail(sender, recipient, msg.as_string())
-    except Exception as e:
-        print(f"Email Error: {e}")
+        api_instance.send_trans_email(send_email)
+    except ApiException as e:
+        print(f"Brevo API Error: {e}")
+
+# --- (Rest of your routes /submit, /unsubscribe, etc. remain the same) ---
 
 # --- Routes ---
 
