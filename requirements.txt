@@ -2,5 +2,3 @@ flask
 gspread
 google-auth
 brevo-python
-
-
