@@ -1,9 +1,17 @@
 from datetime import datetime
 import os
 import json
+import sys
 from flask import Flask, render_template, request, redirect, url_for
 import gspread
 from google.oauth2.service_account import Credentials
+
+# --- START COMPATIBILITY PATCH ---
+# This fixes the 'async' SyntaxError in the Brevo SDK for Python 3.7+
+import builtins
+if not hasattr(builtins, 'async'):
+    setattr(builtins, 'async', False)
+# --- END COMPATIBILITY PATCH ---
 
 # --- NEW: Brevo SDK Imports ---
 import sib_api_v3_sdk
@@ -58,8 +66,6 @@ def send_bakery_email(subject, body, recipient):
     except ApiException as e:
         print(f"Brevo API Error: {e}")
 
-# --- (Rest of your routes /submit, /unsubscribe, etc. remain the same) ---
-
 # --- Routes ---
 
 @app.route('/')
@@ -103,7 +109,6 @@ def submit():
             value_input_option='USER_ENTERED'
         )
 
-        # Handle deduplicated subscription
         if join_list:
             sub_sheet = sheet.worksheet("Subscribers")
             try:
@@ -128,8 +133,6 @@ def unsubscribe():
         sheet = get_sheet()
         sub_sheet = sheet.worksheet("Subscribers")
         cell = sub_sheet.find(email.strip().lower())
-        
-        # Updates the Status column (Column 3) to 'Unsubscribed'
         sub_sheet.update_cell(cell.row, 3, 'Unsubscribed')
         return f"<h3>Success</h3><p>{email} has been unsubscribed from our weekly menu distribution.</p>"
     except gspread.exceptions.CellNotFound:
