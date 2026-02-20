@@ -93,26 +93,4 @@ def home():
         items = sheet.worksheet("Menu").get_all_records()
         visible_items = [i for i in items if i.get('Status') == 'Active']
         
-        # FIX 1: Corrected indentation here!
-        settings = {i['Setting Name']: i['Value'] for i in sheet.worksheet("Settings").get_all_records() if i.get('Setting Name')}
-        
-        if settings.get('Pickup Windows'):
-            settings['window_list'] = [w.strip() for w in settings['Pickup Windows'].split(',')]
-            
-        # Pull the DC windows from the Google Sheet
-        if settings.get('DC Pickup Windows'):
-            settings['dc_window_list'] = [w.strip() for w in settings['DC Pickup Windows'].split(',')]
-            
-        return render_template('index.html', items=visible_items, details=settings)
-    except Exception as e:
-        return render_template('index.html', items=[], details={'Store Status': 'Open'})
-
-@app.route('/submit', methods=['POST'])
-def submit():
-    try:
-        name = request.form.get('name')
-        contact = request.form.get('contact').strip().lower()
-        order_summary = request.form.get('order_summary')
-        timestamp = datetime.now()
-        
-        _, deadline_dt, deadline_text = get_bake_settings()
+        settings = {i['Setting Name']: i['Value'] for i in sheet.worksheet("Settings").get_all_records() if i.get('Setting
