@@ -59,11 +59,17 @@ def send_bakery_email(subject, recipient, name=None):
                 <body style="font-family: sans-serif; line-height: 1.6; color: #333;">
                     <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
                         <h2 style="color: #d4a373;">Hello{"" if not name else " " + name}!</h2>
-                        <p>Our organic sourdough menu is now live. We’ve got fresh flour from our farm partners in Virginia.</p>
-                        <p>Orders are open until <strong>{deadline_text}</strong>.</p>
-                        <div style="text-align: center; margin: 20px 0;">
-                            <a href="https://aiarabakery.com" style="background-color: #d4a373; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px;">View Menu & Order</a>
+                        <p>We've received your order and added it to the bake list. Thank you for supporting Aiara Bakery!</p>
+                        
+                        <div style="background: #f9f9f9; padding: 20px; border-left: 4px solid #008CFF; margin: 25px 0;">
+                            <h3 style="margin-top: 0; color: #333;">Payment Instructions</h3>
+                            <p>To finalize your order, please send your total via Venmo to <strong>@aiarabakery</strong>.</p>
+                            <a href="https://venmo.com/aiarabakery" style="display: inline-block; background: #008CFF; color: white; padding: 12px 25px; text-decoration: none; border-radius: 4px; font-weight: bold; margin-top: 10px;">Pay with Venmo</a>
                         </div>
+                        
+                        <p>A quick reminder: orders for the upcoming bake close on <strong>{deadline_text}</strong>.</p>
+                        <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+                        <small style="color: #888;">Aiara Bakery | <a href="{unsubscribe_url}">Unsubscribe</a></small>
                     </div>
                 </body>
             </html>
@@ -149,7 +155,9 @@ def submit():
                 sub_sheet.find(contact)
             except gspread.exceptions.CellNotFound:
                 sub_sheet.append_row([timestamp.strftime("%m/%d/%Y %H:%M:%S"), contact, 'Active'], value_input_option='USER_ENTERED')
-                send_bakery_email("🍞 You're on the Bake List!", contact, name)
+                
+        # Send confirmation email for every order, not just when subscribing
+        send_bakery_email("🍞 Aiara Bakery Order Received!", contact, name)
 
         msg = f"Your order is in! (Note: It arrived after the {deadline_text} cutoff, so we will confirm your bake day shortly.)" if is_late else f"Thanks {name}, your order is confirmed for our next bake day!"
         
