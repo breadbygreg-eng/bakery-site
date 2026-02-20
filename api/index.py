@@ -4,8 +4,6 @@ import json
 from flask import Flask, render_template, request, redirect, url_for
 import gspread
 from google.oauth2.service_account import Credentials
-
-# --- Modern Brevo Imports ---
 import brevo_python
 from brevo_python.rest import ApiException
 
@@ -27,17 +25,18 @@ def get_bake_settings():
         details = {item['Setting Name']: item['Value'] for item in data if item.get('Setting Name')}
         
         bake_date_str = details.get('Next Bake Date', '01/01/2099')
-        # Handle potential date format errors gracefully
-        try:
-            bake_date_dt = datetime.strptime(bake_date_str, "%m/%d/%Y")
-        extra_date_formats = ["%m/%d/%y", "%Y-%m-%d"]
-        for fmt in extra_date_formats:
+        bake_date_dt = None
+        
+        # Fixed syntax: Try multiple formats correctly
+        formats = ["%m/%d/%Y", "%m/%d/%y", "%Y-%m-%d"]
+        for fmt in formats:
             try:
                 bake_date_dt = datetime.strptime(bake_date_str, fmt)
                 break
-            except:
+            except ValueError:
                 continue
-        else:
+        
+        if not bake_date_dt:
             bake_date_dt = datetime.now() + timedelta(days=7)
 
         deadline_dt = bake_date_dt - timedelta(days=1)
@@ -63,13 +62,11 @@ def send_bakery_email(subject, recipient, name=None):
                 <body style="font-family: sans-serif; line-height: 1.6; color: #333;">
                     <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
                         <h2 style="color: #d4a373;">Hello{"" if not name else " " + name}!</h2>
-                        <p>Our organic sourdough menu is now live. We’ve got fresh flour from our farm partners in Virginia, and the loaves look better than ever.</p>
-                        <p><strong>This Week's Menu:</strong> 100% Whole Wheat, Country Bread, and Cashew & Raisin.</p>
+                        <p>Our organic sourdough menu is now live. We’ve got fresh flour from our farm partners in Virginia.</p>
                         <p>Orders are open until <strong>{deadline_text}</strong>.</p>
                         <div style="text-align: center; margin: 20px 0;">
                             <a href="https://aiarabakery.com" style="background-color: #d4a373; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px;">View Menu & Order</a>
                         </div>
-                        <small style="color: #888;">Aiara Bakery | <a href="{unsubscribe_url}">Unsubscribe</a></small>
                     </div>
                 </body>
             </html>
@@ -104,11 +101,9 @@ def submit():
         order_summary = request.form.get('order_summary')
         timestamp = datetime.now()
         
-        # Get dynamic deadline
         _, deadline_dt, deadline_text = get_bake_settings()
         is_late = timestamp > deadline_dt
 
-        # ALWAYS save to sheet first
         sheet = get_sheet()
         sheet.worksheet("Orders").append_row([
             timestamp.strftime("%m/%d/%Y %H:%M:%S"), name, contact, order_summary, 
@@ -127,7 +122,7 @@ def submit():
         msg = f"Your order is in! (Note: It arrived after the {deadline_text} cutoff, so we will confirm your bake day shortly.)" if is_late else f"Thanks {name}, your order is confirmed for our next bake day!"
         return render_template('success.html', name=name, message=msg)
     except Exception as e:
-        print(f"SUBMIT_ERROR: {e}")
         return f"Error: {e}"
 
-# (Unsubscribe and Subscribe routes remain the same as previous version)
+# Important for Vercel
+index = app
