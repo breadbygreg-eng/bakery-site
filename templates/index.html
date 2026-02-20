@@ -253,10 +253,10 @@
     function toggleLogistics() {
         const val = document.getElementById('logistics').value;
         document.getElementById('pickupArea').style.display = val === 'Clarksburg Resident (Pickup)' ? 'block' : 'none';
+        document.getElementById('dcArea').style.display = val === 'Washington, DC 29th St NW' ? 'block' : 'none';
         document.getElementById('schoolArea').style.display = val === 'WWS (Pickup)' ? 'block' : 'none';
         document.getElementById('otherArea').style.display = val === 'Other' ? 'block' : 'none';
     }
-
     document.getElementById('orderForm').onsubmit = function() {
         let summary = [];
         document.querySelectorAll('.qty-select').forEach(select => {
@@ -272,4 +272,5 @@
     </script>
 </body>
 </html>
+
 
