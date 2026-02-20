@@ -1,11 +1,10 @@
 from datetime import datetime, timedelta
 import os
 import json
+import urllib.request
 from flask import Flask, render_template, request, redirect, url_for
 import gspread
 from google.oauth2.service_account import Credentials
-import brevo_python
-from brevo_python.rest import ApiException
 
 app = Flask(__name__, template_folder='../templates')
 
@@ -48,10 +47,6 @@ def get_bake_settings():
 
 def send_bakery_email(subject, recipient, name=None):
     try:
-        configuration = brevo_python.Configuration()
-        configuration.api_key['api-key'] = os.environ.get('BREVO_API_KEY')
-        api_instance = brevo_python.TransactionalEmailsApi(brevo_python.ApiClient(configuration))
-        
         _, _, deadline_text = get_bake_settings()
         unsubscribe_url = f"https://aiarabakery.com/unsubscribe?email={recipient}"
         
@@ -69,14 +64,27 @@ def send_bakery_email(subject, recipient, name=None):
                 </body>
             </html>
         """
-        send_email = brevo_python.SendSmtpEmail(
-            to=[{"email": recipient}],
-            sender={"name": "Aiara Bakery", "email": "greg@aiarabakery.com"},
-            subject=subject, html_content=html_content
-        )
-        api_instance.send_trans_email(send_email)
+        
+        url = "https://api.brevo.com/v3/smtp/email"
+        api_key = os.environ.get('BREVO_API_KEY')
+        
+        data = {
+            "sender": {"name": "Aiara Bakery", "email": "greg@aiarabakery.com"},
+            "to": [{"email": recipient}],
+            "subject": subject,
+            "htmlContent": html_content
+        }
+        
+        req = urllib.request.Request(url, data=json.dumps(data).encode('utf-8'), method='POST')
+        req.add_header('api-key', api_key)
+        req.add_header('Content-Type', 'application/json')
+        req.add_header('Accept', 'application/json')
+        
+        with urllib.request.urlopen(req) as response:
+            print(f"Email sent: {response.status}")
+            
     except Exception as e:
-        print(f"Brevo Error: {e}")
+        print(f"Brevo API Error: {e}")
 
 @app.route('/')
 def home():
@@ -103,8 +111,6 @@ def submit():
         is_late = timestamp > deadline_dt
 
         sheet = get_sheet()
-        
-        # FIX: Fetch settings so they can be passed to success.html
         settings = {i['Setting Name']: i['Value'] for i in sheet.worksheet("Settings").get_all_records() if i.get('Setting Name')}
 
         sheet.worksheet("Orders").append_row([
@@ -123,12 +129,10 @@ def submit():
 
         msg = f"Your order is in! (Note: It arrived after the {deadline_text} cutoff, so we will confirm your bake day shortly.)" if is_late else f"Thanks {name}, your order is confirmed for our next bake day!"
         
-        # FIX: Passing missing 'is_late' and 'details' to the template
         return render_template('success.html', name=name, message=msg, is_late=is_late, details=settings)
     except Exception as e:
         return f"Error: {e}"
 
-# FIX: Added missing routes referenced by HTML forms
 @app.route('/subscribe', methods=['POST'])
 def subscribe():
     return redirect(url_for('home'))
@@ -138,3 +142,6 @@ def unsubscribe():
     if request.method == 'POST':
         return redirect(url_for('home'))
     return render_template('unsubscribe.html')
+
+# Important for Vercel
+index = app
