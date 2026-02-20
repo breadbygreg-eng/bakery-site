@@ -1,21 +1,13 @@
 from datetime import datetime
 import os
 import json
-import sys
 from flask import Flask, render_template, request, redirect, url_for
 import gspread
 from google.oauth2.service_account import Credentials
 
-# --- START COMPATIBILITY PATCH ---
-# This fixes the 'async' SyntaxError in the Brevo SDK for Python 3.7+
-import builtins
-if not hasattr(builtins, 'async'):
-    setattr(builtins, 'async', False)
-# --- END COMPATIBILITY PATCH ---
-
-# --- NEW: Brevo SDK Imports ---
-import sib_api_v3_sdk
-from sib_api_v3_sdk.rest import ApiException
+# --- NEW: Modern Brevo Imports ---
+import brevo_python
+from brevo_python.rest import ApiException
 
 app = Flask(__name__, template_folder='../templates')
 
@@ -27,15 +19,13 @@ def get_sheet():
     client = gspread.authorize(creds)
     return client.open_by_key(os.environ.get('GOOGLE_SHEET_ID'))
 
-# --- REPLACED: Professional Brevo Email Function ---
+# --- UPDATED: Modern Brevo Email Function ---
 def send_bakery_email(subject, body, recipient):
-    # Setup Configuration using your Vercel Environment Variable
-    configuration = sib_api_v3_sdk.Configuration()
+    configuration = brevo_python.Configuration()
     configuration.api_key['api-key'] = os.environ.get('BREVO_API_KEY')
     
-    api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
+    api_instance = brevo_python.TransactionalEmailsApi(brevo_python.ApiClient(configuration))
     
-    # Define the Unsubscribe Footer
     unsubscribe_url = f"https://aiarabakery.com/unsubscribe?email={recipient}"
     html_content = f"""
         <html>
@@ -53,8 +43,7 @@ def send_bakery_email(subject, body, recipient):
         </html>
     """
 
-    # Create the Email Object (Must match your verified Zoho sender)
-    send_email = sib_api_v3_sdk.SendSmtpEmail(
+    send_email = brevo_python.SendSmtpEmail(
         to=[{"email": recipient}],
         sender={"name": "Aiara Bakery", "email": "greg@aiarabakery.com"},
         subject=subject,
