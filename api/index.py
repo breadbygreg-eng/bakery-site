@@ -17,7 +17,6 @@ def get_sheet():
     return client.open_by_key(os.environ.get('GOOGLE_SHEET_ID'))
 
 def get_bake_settings():
-    """Safely retrieves bake date and calculates deadline."""
     try:
         sheet = get_sheet()
         settings_sheet = sheet.worksheet("Settings")
@@ -27,7 +26,6 @@ def get_bake_settings():
         bake_date_str = details.get('Next Bake Date', '01/01/2099')
         bake_date_dt = None
         
-        # Fixed syntax: Try multiple formats correctly
         formats = ["%m/%d/%Y", "%m/%d/%y", "%Y-%m-%d"]
         for fmt in formats:
             try:
@@ -105,6 +103,10 @@ def submit():
         is_late = timestamp > deadline_dt
 
         sheet = get_sheet()
+        
+        # FIX: Fetch settings so they can be passed to success.html
+        settings = {i['Setting Name']: i['Value'] for i in sheet.worksheet("Settings").get_all_records() if i.get('Setting Name')}
+
         sheet.worksheet("Orders").append_row([
             timestamp.strftime("%m/%d/%Y %H:%M:%S"), name, contact, order_summary, 
             request.form.get('logistics'), f"{request.form.get('pickup_window', 'N/A')} {request.form.get('other_location', '')}",
@@ -120,9 +122,19 @@ def submit():
                 send_bakery_email("🍞 You're on the Bake List!", contact, name)
 
         msg = f"Your order is in! (Note: It arrived after the {deadline_text} cutoff, so we will confirm your bake day shortly.)" if is_late else f"Thanks {name}, your order is confirmed for our next bake day!"
-        return render_template('success.html', name=name, message=msg)
+        
+        # FIX: Passing missing 'is_late' and 'details' to the template
+        return render_template('success.html', name=name, message=msg, is_late=is_late, details=settings)
     except Exception as e:
         return f"Error: {e}"
 
-# Important for Vercel
-index = app
+# FIX: Added missing routes referenced by HTML forms
+@app.route('/subscribe', methods=['POST'])
+def subscribe():
+    return redirect(url_for('home'))
+
+@app.route('/unsubscribe', methods=['GET', 'POST'])
+def unsubscribe():
+    if request.method == 'POST':
+        return redirect(url_for('home'))
+    return render_template('unsubscribe.html')
