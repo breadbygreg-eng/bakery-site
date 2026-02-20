@@ -158,7 +158,7 @@
                 <div class="qty-row">
                     <span class="price-tag">${{ item['Price'] }}</span>
                     {% if item['Remaining']|int > 0 %}
-                        <select class="qty-select" data-name="{{ item['Item Name'] }}">
+                        <select class="qty-select" data-name="{{ item['Item Name'] }}" data-price="{{ item['Price'] }}">
                             <option value="0">0</option>
                             {% for i in range(1, 5) %}
                                 {% if i <= item['Remaining']|int %}<option value="{{ i }}">{{ i }}</option>{% endif %}
@@ -177,7 +177,8 @@
                 <h2 style="font-family: 'Playfair Display', serif; margin-top: 0;">Order Details</h2>
                 <form action="/submit" method="POST" id="orderForm">
                     <input type="hidden" name="order_summary" id="orderSummary">
-
+                    <input type="hidden" name="order_total" id="orderTotal">
+                    
                     <label for="name">Name</label>
                     <input type="text" id="name" name="name" required>
 
@@ -250,27 +251,34 @@
     </div>
 
     <script>
-    function toggleLogistics() {
-        const val = document.getElementById('logistics').value;
-        document.getElementById('pickupArea').style.display = val === 'Clarksburg Resident (Pickup)' ? 'block' : 'none';
-        document.getElementById('dcArea').style.display = val === 'Washington, DC 29th St NW' ? 'block' : 'none';
-        document.getElementById('schoolArea').style.display = val === 'WWS (Pickup)' ? 'block' : 'none';
-        document.getElementById('otherArea').style.display = val === 'Other' ? 'block' : 'none';
-    }
-    document.getElementById('orderForm').onsubmit = function() {
-        let summary = [];
-        document.querySelectorAll('.qty-select').forEach(select => {
-            if (select.value > 0) summary.push(select.value + "x " + select.getAttribute('data-name'));
-        });
-
-        if (summary.length === 0) { alert("Please select at least one loaf!"); return false; }
-        document.getElementById('orderSummary').value = summary.join(", ");
-        document.getElementById('submitBtn').disabled = true;
-        document.getElementById('submitBtn').innerText = "Processing...";
-        return true;
-    };
+        function toggleLogistics() {
+            const val = document.getElementById('logistics').value;
+            document.getElementById('pickupArea').style.display = val === 'Clarksburg Resident (Pickup)' ? 'block' : 'none';
+            document.getElementById('dcArea').style.display = val === 'Washington, DC 29th St NW' ? 'block' : 'none';
+            document.getElementById('schoolArea').style.display = val === 'WWS (Pickup)' ? 'block' : 'none';
+            document.getElementById('otherArea').style.display = val === 'Other' ? 'block' : 'none';
+        }
+        document.getElementById('orderForm').onsubmit = function() {
+            let summary = [];
+            let total = 0;
+            document.querySelectorAll('.qty-select').forEach(select => {
+                let qty = parseInt(select.value);
+                if (qty > 0) {
+                    summary.push(qty + "x " + select.getAttribute('data-name'));
+                    total += qty * parseFloat(select.getAttribute('data-price'));
+                }
+            });
+    
+            if (summary.length === 0) { alert("Please select at least one loaf!"); return false; }
+            document.getElementById('orderSummary').value = summary.join(", ");
+            document.getElementById('orderTotal').value = total.toFixed(2); // Sends the exact dollar amount
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('submitBtn').innerText = "Processing...";
+            return true;
+        };
     </script>
 </body>
 </html>
+
 
 
