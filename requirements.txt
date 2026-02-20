@@ -1,5 +1,6 @@
 flask
 gspread
 google-auth
-sib-api-v3-sdk==4.4.3
+brevo-python
+
 
