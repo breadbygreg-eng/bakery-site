@@ -9,15 +9,15 @@
         :root {
             --primary-brown: #5d4037;
             --accent-gold: #d4a373;
+            --venmo-blue: #008CFF;
         }
 
         body { 
             margin: 0;
             padding: 0;
             font-family: 'Lato', sans-serif; 
-            /* Matches home page background for continuity */
             background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
-                        url('../public/Bread_Pile.jpg') no-repeat center center fixed;
+                        url('/Bread_Pile.jpg') no-repeat center center fixed;
             background-size: cover;
             min-height: 100vh;
             display: flex;
@@ -43,6 +43,30 @@
             font-size: 2.2rem;
             margin-top: 0;
         }
+
+        .payment-box {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .venmo-btn {
+            display: inline-block;
+            background: var(--venmo-blue);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            margin-top: 15px;
+            transition: 0.3s;
+        }
+
+        .venmo-btn:hover { filter: brightness(1.1); }
 
         .details { 
             text-align: left; 
@@ -88,9 +112,15 @@
         <h1>Fresh Bread Incoming!</h1>
         <p>Thanks, <strong>{{ name }}</strong>. We've received your order and added it to the bake list.</p>
         
+        <div class="payment-box">
+            <h3 style="margin-top: 0; color: #166534; font-family: 'Playfair Display', serif;">Step 2: Complete Your Payment</h3>
+            <p style="color: #15803d; margin-bottom: 0;">To secure your loaves, please send your payment via Venmo.</p>
+            <a href="https://venmo.com/aiarabakery" target="_blank" class="venmo-btn">Pay @aiarabakery</a>
+        </div>
+
         {% if is_late %}
         <div style="background: #fff5f5; border: 1px solid #feb2b2; padding: 15px; margin-bottom: 20px; border-radius: 4px; color: #9b2c2c; font-size: 0.9rem; text-align: left;">
-            <strong>Notice:</strong> The oven is already at temperature! Because your order arrived after our current bake cycle was finalized, we have prioritized your <strong>order</strong> for our <strong>next</strong> upcoming bake day. We appreciate your <strong>patience</strong>.
+            <strong>Notice:</strong> The oven is already at temperature! Because your order arrived after our current bake cycle was finalized, we have prioritized your <strong>order</strong> for our <strong>next</strong> upcoming bake day. We appreciate your patience.
         </div>
         {% endif %}
 
@@ -101,7 +131,7 @@
         </div>
 
         <a href="/" class="btn">Back to Home</a>
-        <p class="support-text">Need to change something? Email <strong>breadbygreg@gmail.com</strong></p>
+        <p class="support-text">Need to change something? Email <strong>greg@aiarabakery.com</strong></p>
     </div>
 </body>
 </html>
