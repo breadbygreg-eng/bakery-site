@@ -116,12 +116,20 @@ def submit():
         _, deadline_dt, deadline_text = get_bake_settings()
         is_late = timestamp > deadline_dt
 
-        sheet = get_sheet()
+sheet = get_sheet()
         settings = {i['Setting Name']: i['Value'] for i in sheet.worksheet("Settings").get_all_records() if i.get('Setting Name')}
+
+        # NEW: Safely collect whatever location data they provided without errors
+        loc_details = [
+            request.form.get('pickup_window'),
+            request.form.get('dc_pickup_window'),
+            request.form.get('other_location')
+        ]
+        logistics_details = " ".join([loc for loc in loc_details if loc]).strip() or "N/A"
 
         sheet.worksheet("Orders").append_row([
             timestamp.strftime("%m/%d/%Y %H:%M:%S"), name, contact, order_summary, 
-            request.form.get('logistics'), f"{request.form.get('pickup_window', 'N/A')} {request.form.get('other_location', '')}",
+            request.form.get('logistics'), logistics_details,
             "Yes" if request.form.get('subscription') else "No", request.form.get('notes')
         ], value_input_option='USER_ENTERED')
 
