@@ -1,4 +1,5 @@
 flask
 gspread
 google-auth
-sib-api-v3-sdk==4.2.2
+sib-api-v3-sdk==4.4.3
+
