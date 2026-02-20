@@ -20,9 +20,13 @@ def get_bake_settings():
         sheet = get_sheet()
         settings_sheet = sheet.worksheet("Settings")
         data = settings_sheet.get_all_records()
-        details = {item['Setting Name']: item['Value'] for item in data if item.get('Setting Name')}
         
-        bake_date_str = details.get('Next Bake Date', '01/01/2099')
+        settings_dict = {}
+        for item in data:
+            if item.get('Setting Name'):
+                settings_dict[item['Setting Name']] = item['Value']
+        
+        bake_date_str = settings_dict.get('Next Bake Date', '01/01/2099')
         bake_date_dt = None
         
         formats = ["%m/%d/%Y", "%m/%d/%y", "%Y-%m-%d"]
@@ -93,4 +97,75 @@ def home():
         items = sheet.worksheet("Menu").get_all_records()
         visible_items = [i for i in items if i.get('Status') == 'Active']
         
-        settings = {i['Setting Name']: i['Value'] for i in sheet.worksheet("Settings").get_all_records() if i.get('Setting
+        settings = {}
+        for i in sheet.worksheet("Settings").get_all_records():
+            if i.get('Setting Name'):
+                settings[i['Setting Name']] = i['Value']
+        
+        if settings.get('Pickup Windows'):
+            settings['window_list'] = [w.strip() for w in settings['Pickup Windows'].split(',')]
+            
+        if settings.get('DC Pickup Windows'):
+            settings['dc_window_list'] = [w.strip() for w in settings['DC Pickup Windows'].split(',')]
+            
+        return render_template('index.html', items=visible_items, details=settings)
+    except Exception as e:
+        return render_template('index.html', items=[], details={'Store Status': 'Open'})
+
+@app.route('/submit', methods=['POST'])
+def submit():
+    try:
+        name = request.form.get('name')
+        contact = request.form.get('contact').strip().lower()
+        order_summary = request.form.get('order_summary')
+        timestamp = datetime.now()
+        
+        _, deadline_dt, deadline_text = get_bake_settings()
+        is_late = timestamp > deadline_dt
+
+        sheet = get_sheet()
+        
+        settings = {}
+        for i in sheet.worksheet("Settings").get_all_records():
+            if i.get('Setting Name'):
+                settings[i['Setting Name']] = i['Value']
+
+        loc_details = [
+            request.form.get('pickup_window'),
+            request.form.get('dc_pickup_window'),
+            request.form.get('other_location')
+        ]
+        logistics_details = " ".join([loc for loc in loc_details if loc]).strip() or "N/A"
+
+        sheet.worksheet("Orders").append_row([
+            timestamp.strftime("%m/%d/%Y %H:%M:%S"), name, contact, order_summary, 
+            request.form.get('logistics'), logistics_details,
+            "Yes" if request.form.get('subscription') else "No", request.form.get('notes')
+        ], value_input_option='USER_ENTERED')
+
+        if request.form.get('join_list'):
+            sub_sheet = sheet.worksheet("Subscribers")
+            try:
+                sub_sheet.find(contact)
+            except gspread.exceptions.CellNotFound:
+                sub_sheet.append_row([timestamp.strftime("%m/%d/%Y %H:%M:%S"), contact, 'Active'], value_input_option='USER_ENTERED')
+                send_bakery_email("🍞 You're on the Bake List!", contact, name)
+
+        msg = f"Your order is in! (Note: It arrived after the {deadline_text} cutoff, so we will confirm your bake day shortly.)" if is_late else f"Thanks {name}, your order is confirmed for our next bake day!"
+        
+        return render_template('success.html', name=name, message=msg, is_late=is_late, details=settings)
+    except Exception as e:
+        return f"Error: {e}"
+
+@app.route('/subscribe', methods=['POST'])
+def subscribe():
+    return redirect(url_for('home'))
+
+@app.route('/unsubscribe', methods=['GET', 'POST'])
+def unsubscribe():
+    if request.method == 'POST':
+        return redirect(url_for('home'))
+    return render_template('unsubscribe.html')
+
+# Important for Vercel
+index = app
