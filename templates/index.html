@@ -196,3 +196,85 @@
 
                     <label for="logistics">How will you get your bread?</label>
                     <select id="logistics" name="logistics" required onchange="toggleLogistics()">
+                        <option value="" disabled selected>Select an option...</option>
+                        <option value="Clarksburg Resident (Pickup)">Clarksburg Resident (Pickup)</option>
+                        <option value="Washington, DC 29th St NW">Washington, DC 29th St NW</option>
+                        <option value="WWS (Pickup)">WWS (Pickup)</option>
+                        <option value="Other">Other</option>
+                    </select>
+
+                    <div id="pickupArea" style="display:none; margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.2);">
+                        <label>Select Clarksburg Pickup Time:</label>
+                        <select name="pickup_window">
+                            {% for window in details['window_list'] %}<option value="{{ window }}">{{ window }}</option>{% endfor %}
+                        </select>
+                    </div>
+
+                    <div id="dcArea" style="display:none; margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.2);">
+                        <label>Select DC Pickup Time:</label>
+                        <select name="dc_pickup_window">
+                            {% if details['dc_window_list'] %}
+                                {% for window in details['dc_window_list'] %}<option value="{{ window }}">{{ window }}</option>{% endfor %}
+                            {% else %}
+                                <option value="TBD">Time TBD</option>
+                            {% endif %}
+                        </select>
+                    </div>
+
+                    <div id="schoolArea" style="display:none; margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.2);">
+                        <p><strong>Pickup Info:</strong> {{ details['WWS (Pickup) Info'] }}</p>
+                    </div>
+
+                    <div id="otherArea" style="display:none; margin-bottom: 20px;">
+                        <input type="text" name="other_location" placeholder="Where are you located?">
+                    </div>
+
+                    <label for="notes">Notes</label>
+                    <textarea id="notes" name="notes" rows="2"></textarea>
+                    
+                    <button type="submit" id="submitBtn">Submit Order</button>
+                </form>
+            {% endif %}
+        </div>
+
+        <div style="text-align: center; margin-top: 50px; padding: 40px 20px; background: rgba(0,0,0,0.4); border-radius: 4px; border-top: 2px solid var(--accent-gold);">
+            <h3 style="font-family: 'Playfair Display', serif; margin-top: 0;">Not ready to order?</h3>
+            <p style="font-size: 0.9rem; max-width: 400px; margin: 0 auto 20px auto;">Join our list to get the menu delivered to your inbox every week so you can catch the next bake.</p>
+            
+            <form action="/subscribe" method="POST" style="max-width: 400px; margin: 0 auto;">
+                <input type="email" name="email" placeholder="Enter your email..." required 
+                       style="margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white;">
+                <button type="submit" style="padding: 12px; background: transparent; color: white; border: 2px solid var(--accent-gold); font-size: 0.8rem;">Notify Me</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function toggleLogistics() {
+            const val = document.getElementById('logistics').value;
+            document.getElementById('pickupArea').style.display = val === 'Clarksburg Resident (Pickup)' ? 'block' : 'none';
+            document.getElementById('dcArea').style.display = val === 'Washington, DC 29th St NW' ? 'block' : 'none';
+            document.getElementById('schoolArea').style.display = val === 'WWS (Pickup)' ? 'block' : 'none';
+            document.getElementById('otherArea').style.display = val === 'Other' ? 'block' : 'none';
+        }
+        document.getElementById('orderForm').onsubmit = function() {
+            let summary = [];
+            let total = 0;
+            document.querySelectorAll('.qty-select').forEach(select => {
+                let qty = parseInt(select.value);
+                if (qty > 0) {
+                    summary.push(qty + "x " + select.getAttribute('data-name'));
+                    total += qty * parseFloat(select.getAttribute('data-price'));
+                }
+            });
+    
+            if (summary.length === 0) { alert("Please select at least one loaf!"); return false; }
+            document.getElementById('orderSummary').value = summary.join(", ");
+            document.getElementById('orderTotal').value = total.toFixed(2); // Sends the exact dollar amount
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('submitBtn').innerText = "Processing...";
+            return true;
+        };
+    </script>
+</body>
+</html>
