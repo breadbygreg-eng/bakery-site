@@ -241,33 +241,11 @@
             <h3 style="font-family: 'Playfair Display', serif; margin-top: 0;">Not ready to order?</h3>
             <p style="font-size: 0.9rem; max-width: 400px; margin: 0 auto 20px auto;">Join our list to get the menu delivered to your inbox every week so you can catch the next bake.</p>
             
-            <form id="standaloneSubscribeForm" onsubmit="handleStandaloneSubscription(event)" style="max-width: 400px; margin: 0 auto;">
-                <input type="email" id="subscriberEmail" name="email" placeholder="Enter your email..." required 
-                       style="margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white;">
-                <button type="submit" style="padding: 12px; background: transparent; color: white; border: 2px solid var(--accent-gold); font-size: 0.8rem;">Notify Me</button>
-            </form>
-            
-            <div id="subscribeSuccessMessage" style="display: none; color: var(--accent-gold); margin-top: 15px; font-weight: bold;">
-                You're on the list!
-            </div>
-        </div>
-
-<script>
-function handleStandaloneSubscription(event) {
-  event.preventDefault(); // Stops the page from refreshing/redirecting
-  
-  var email = document.getElementById('subscriberEmail').value;
-  
-  // Sends the email to a function we will create in Code.gs called 'addEmailToSubscribers'
-  google.script.run
-    .withSuccessHandler(function() {
-      // Hide the form and show the success message
-      document.getElementById('standaloneSubscribeForm').style.display = 'none';
-      document.getElementById('subscribeSuccessMessage').style.display = 'block';
-    })
-    .addEmailToSubscribers(email);
-}
-</script>
+<form action="/subscribe" method="POST" style="max-width: 400px; margin: 0 auto;">
+    <input type="email" name="email" placeholder="Enter your email..." required 
+           style="margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white;">
+    <button type="submit" style="padding: 12px; background: transparent; color: white; border: 2px solid var(--accent-gold); font-size: 0.8rem;">Notify Me</button>
+</form>
 
     <script>
         function toggleLogistics() {
@@ -298,5 +276,6 @@ function handleStandaloneSubscription(event) {
     </script>
 </body>
 </html>
+
 
 
