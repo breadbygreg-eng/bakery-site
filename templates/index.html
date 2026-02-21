@@ -200,7 +200,7 @@
                         <option value="Clarksburg Resident (Pickup)">Clarksburg Resident (Pickup)</option>
                         <option value="Washington, DC 29th St NW">Washington, DC 29th St NW</option>
                         <option value="WWS (Pickup)">WWS (Pickup)</option>
-                        <option value="Other">Other</option>
+                        <option value="Other (Please detail in Notes)">Other (Please detail in Notes)</option>
                     </select>
 
                     <div id="pickupArea" style="display:none; margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.2);">
@@ -223,10 +223,6 @@
 
                     <div id="schoolArea" style="display:none; margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.2);">
                         <p><strong>Pickup Info:</strong> {{ details['WWS (Pickup) Info'] }}</p>
-                    </div>
-
-                    <div id="otherArea" style="display:none; margin-bottom: 20px;">
-                        <input type="text" name="other_location" placeholder="Where are you located?">
                     </div>
 
                     <label for="notes">Notes</label>
@@ -253,7 +249,6 @@
             document.getElementById('pickupArea').style.display = val === 'Clarksburg Resident (Pickup)' ? 'block' : 'none';
             document.getElementById('dcArea').style.display = val === 'Washington, DC 29th St NW' ? 'block' : 'none';
             document.getElementById('schoolArea').style.display = val === 'WWS (Pickup)' ? 'block' : 'none';
-            document.getElementById('otherArea').style.display = val === 'Other' ? 'block' : 'none';
         }
         document.getElementById('orderForm').onsubmit = function() {
             let summary = [];
@@ -276,6 +271,3 @@
     </script>
 </body>
 </html>
-
-
-
