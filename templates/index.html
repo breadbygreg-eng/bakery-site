@@ -230,11 +230,6 @@
                         <input type="text" name="other_location" placeholder="Where are you located?">
                     </div>
 
-                    <div style="margin-bottom: 20px; display: flex; align-items: center;">
-                        <input type="checkbox" name="subscription" id="subscription" style="width: 20px; margin-right: 10px; margin-bottom: 0;">
-                        <label for="subscription" style="margin-bottom: 0;">Make this a weekly recurring order?</label>
-                    </div>
-
                     <label for="notes">Notes</label>
                     <textarea id="notes" name="notes" rows="2"></textarea>
                     
@@ -248,7 +243,7 @@
             <p style="font-size: 0.9rem; max-width: 400px; margin: 0 auto 20px auto;">Join our list to get the menu delivered to your inbox every week so you can catch the next bake.</p>
             
             <form action="/subscribe" method="POST" style="max-width: 400px; margin: 0 auto;">
-                <input type="email" name="sub_contact" placeholder="Enter your email..." required 
+                <input type="email" name="email" placeholder="Enter your email..." required 
                        style="margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white;">
                 <button type="submit" style="padding: 12px; background: transparent; color: white; border: 2px solid var(--accent-gold); font-size: 0.8rem;">Notify Me</button>
             </form>
@@ -284,6 +279,7 @@
     </script>
 </body>
 </html>
+
 
 
 
