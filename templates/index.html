@@ -184,16 +184,16 @@
                     <input type="email" id="contact" name="contact" required placeholder="your@email.com">
 
                     <div style="margin: 25px 0; background: rgba(0, 0, 0, 0.2); padding: 15px; border-left: 4px solid var(--accent-gold);">
-                        <label style="display: block; margin-bottom: 12px; cursor: pointer;">
-                            <input type="checkbox" name="join_list" id="joinList" value="yes" checked> 
+                        <label style="display: flex; align-items: center; margin-bottom: 12px; cursor: pointer;">
+                            <input type="checkbox" name="join_list" id="joinList" value="yes" checked style="width: auto; margin: 0 10px 0 0;"> 
                             Add me to the weekly menu distribution
                         </label>
-                        <label style="display: block; cursor: pointer;">
-                            <input type="checkbox" name="subscription" value="yes"> 
+                        <label style="display: flex; align-items: center; cursor: pointer;">
+                            <input type="checkbox" name="subscription" value="yes" style="width: auto; margin: 0 10px 0 0;"> 
                             I'm interested in becoming a weekly subscriber
                         </label>
                     </div>
-
+                    
                     <label for="logistics">How will you get your bread?</label>
                     <select id="logistics" name="logistics" required onchange="toggleLogistics()">
                         <option value="" disabled selected>Select an option...</option>
@@ -278,3 +278,4 @@
     </script>
 </body>
 </html>
+
