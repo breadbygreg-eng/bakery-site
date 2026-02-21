@@ -116,8 +116,14 @@ def home():
             
         return render_template('index.html', items=visible_items, details=settings)
     except Exception as e:
-        return render_template('index.html', items=[], details={'Store Status': 'Open'})
-
+        # DIAGNOSTIC FIX: This will print the exact Google Sheets error to your screen instead of crashing
+        return f"""
+            <div style="padding: 50px; font-family: sans-serif; text-align: center;">
+                <h2 style="color: #c53030;">Google Sheets Connection Error</h2>
+                <p>The website cannot read the spreadsheet. The exact error is:</p>
+                <code style="background: #eee; padding: 10px; display: inline-block; border-radius: 4px;">{e}</code>
+            </div>
+        """
 @app.route('/submit', methods=['POST'])
 def submit():
     try:
