@@ -204,16 +204,8 @@ def subscribe():
                 'Active'
             ], value_input_option='USER_ENTERED')
             
-        # Return an inline success page so you don't need a separate HTML file to launch
-        return f"""
-            <html>
-            <body style="background: #211512; color: white; font-family: sans-serif; text-align: center; padding: 50px;">
-                <h2 style="color: #d4a373;">You're on the list!</h2>
-                <p>Keep an eye on your inbox for the weekly menu.</p>
-                <a href="/" style="color: white; border: 1px solid #d4a373; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block; margin-top: 20px;">Return to Bakery</a>
-            </body>
-            </html>
-        """
+        # Point back to your actual success page!
+        return render_template('subscribe_success.html', email=email)
         
     except Exception as e:
         print(f"Subscribe Error: {e}")
