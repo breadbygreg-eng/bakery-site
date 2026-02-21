@@ -158,12 +158,17 @@ def submit():
             f"${order_total}", "Pending"
         ], value_input_option='USER_ENTERED')
 
-        if request.form.get('join_list'):
+       if request.form.get('join_list'):
             sub_sheet = sheet.worksheet("Subscribers")
+            
             try:
-                sub_sheet.find(contact)
-            except gspread.exceptions.CellNotFound:
-                sub_sheet.append_row([timestamp.strftime("%m/%d/%Y %H:%M:%S"), contact, 'Active'], value_input_option='USER_ENTERED')
+                # Safely grab existing emails in column B
+                existing_emails = sub_sheet.col_values(2)
+            except Exception:
+                existing_emails = []
+                
+            if contact not in existing_emails:
+                sub_sheet.append_row([timestamp.strftime("%m/%d/%Y %H:%M:%S"), contact, 'Active'], value_input_option='USER_ENTERED')     
                 
         # Send confirmation email for every order, now passing the total price
         send_bakery_email("🍞 Aiara Bakery Order Received!", contact, name, order_total)
@@ -185,18 +190,30 @@ def subscribe():
         sheet = get_sheet()
         sub_sheet = sheet.worksheet("Subscribers")
         
-        # Check if they are already on the list so we don't get duplicates
         try:
-            sub_sheet.find(email)
-        except gspread.exceptions.CellNotFound:
-            # If not found, add them!
+            # Safely grab existing emails in column B
+            existing_emails = sub_sheet.col_values(2)
+        except Exception:
+            existing_emails = []
+
+        # Check if they are already on the list so we don't get duplicates
+        if email not in existing_emails:
             sub_sheet.append_row([
                 timestamp.strftime("%m/%d/%Y %H:%M:%S"), 
                 email, 
                 'Active'
             ], value_input_option='USER_ENTERED')
             
-        return render_template('subscribe_success.html', email=email)
+        # Return an inline success page so you don't need a separate HTML file to launch
+        return f"""
+            <html>
+            <body style="background: #211512; color: white; font-family: sans-serif; text-align: center; padding: 50px;">
+                <h2 style="color: #d4a373;">You're on the list!</h2>
+                <p>Keep an eye on your inbox for the weekly menu.</p>
+                <a href="/" style="color: white; border: 1px solid #d4a373; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block; margin-top: 20px;">Return to Bakery</a>
+            </body>
+            </html>
+        """
         
     except Exception as e:
         print(f"Subscribe Error: {e}")
