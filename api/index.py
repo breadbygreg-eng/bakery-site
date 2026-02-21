@@ -158,7 +158,7 @@ def submit():
             f"${order_total}", "Pending"
         ], value_input_option='USER_ENTERED')
 
-       if request.form.get('join_list'):
+        if request.form.get('join_list'):
             sub_sheet = sheet.worksheet("Subscribers")
             
             try:
@@ -178,7 +178,7 @@ def submit():
         return render_template('success.html', name=name, message=msg, is_late=is_late, details=settings, total=order_total)
     except Exception as e:
         return f"Error: {e}"
-
+        
 @app.route('/subscribe', methods=['POST'])
 def subscribe():
     try:
