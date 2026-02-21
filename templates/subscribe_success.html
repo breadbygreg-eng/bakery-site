@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscribed | Aiara Bakery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-brown: #5d4037;
+            --accent-gold: #d4a373;
+        }
+        body { 
+            margin: 0; 
+            padding: 0;
+            font-family: 'Lato', sans-serif; 
+            background: radial-gradient(circle at center, #4e342e 0%, #211512 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333; 
+        }
+        .card { 
+            background: rgba(255, 255, 255, 0.98); 
+            padding: 40px; 
+            border-radius: 4px; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
+            max-width: 450px; 
+            width: 90%;
+            text-align: center;
+        }
+        h1 { 
+            font-family: 'Playfair Display', serif;
+            color: var(--primary-brown); 
+            font-style: italic;
+            font-size: 2.2rem;
+            margin-top: 0;
+        }
+        .btn { 
+            display: inline-block; 
+            width: 100%;
+            padding: 15px; 
+            background: var(--primary-brown); 
+            color: white; 
+            text-decoration: none; 
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 2px; 
+            transition: 0.3s;
+            box-sizing: border-box;
+            margin-top: 20px;
+        }
+        .btn:hover { background: var(--accent-gold); }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>You're on the list!</h1>
+        <p>Thanks for your interest in Aiara Bakery.</p>
+        <p>We've added <strong>{{ email }}</strong> to our weekly distribution. Keep an eye out for our upcoming bake menus!</p>
+        
+        <a href="/" class="btn">Back to Menu</a>
+    </div>
+</body>
+</html>
