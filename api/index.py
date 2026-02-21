@@ -170,7 +170,31 @@ def submit():
 
 @app.route('/subscribe', methods=['POST'])
 def subscribe():
-    return redirect(url_for('home'))
+    try:
+        email = request.form.get('email').strip().lower()
+        if not email:
+            return redirect(url_for('home'))
+
+        timestamp = datetime.now()
+        sheet = get_sheet()
+        sub_sheet = sheet.worksheet("Subscribers")
+        
+        # Check if they are already on the list so we don't get duplicates
+        try:
+            sub_sheet.find(email)
+        except gspread.exceptions.CellNotFound:
+            # If not found, add them!
+            sub_sheet.append_row([
+                timestamp.strftime("%m/%d/%Y %H:%M:%S"), 
+                email, 
+                'Active'
+            ], value_input_option='USER_ENTERED')
+            
+        return render_template('subscribe_success.html', email=email)
+        
+    except Exception as e:
+        print(f"Subscribe Error: {e}")
+        return redirect(url_for('home'))
 
 @app.route('/unsubscribe', methods=['GET', 'POST'])
 def unsubscribe():
