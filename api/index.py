@@ -64,7 +64,12 @@ def send_bakery_email(subject, recipient, name=None, total="0.00"):
                         <div style="background: #f9f9f9; padding: 20px; border-left: 4px solid #008CFF; margin: 25px 0;">
                             <h3 style="margin-top: 0; color: #333;">Payment Instructions</h3>
                             <p>Your total for this bake is <strong>${total}</strong>. To finalize your order, please send your payment via Venmo to <strong>@aiarabakery</strong>.</p>
-                            <a href="https://venmo.com/aiarabakery" style="display: inline-block; background: #008CFF; color: white; padding: 12px 25px; text-decoration: none; border-radius: 4px; font-weight: bold; margin-top: 10px;">Pay ${total} with Venmo</a>
+                            <a href="https://venmo.com/aiarabakery" style="display: inline-block; background: #008CFF; color: white; padding: 12px 25px; text-decoration: none; border-radius: 4px; font-weight: bold; margin-top: 10px; margin-bottom: 20px;">Pay ${total} with Venmo</a>
+                            
+                            <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 0 0 15px 0;">
+                            <p style="margin: 0; font-size: 0.9em; color: #555;">
+                                <strong>No Venmo?</strong> We also accept Zelle. Please email <a href="mailto:greg@aiarabakery.com" style="color: #d4a373; font-weight: bold; text-decoration: none;">greg@aiarabakery.com</a> for instructions.
+                            </p>
                         </div>
                         
                         <p>A quick reminder: orders for the upcoming bake close on <strong>{deadline_text}</strong>.</p>
