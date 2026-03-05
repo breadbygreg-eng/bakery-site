@@ -222,5 +222,104 @@ def unsubscribe():
         return redirect(url_for('home'))
     return render_template('unsubscribe.html')
 
+def send_vip_email(subject, recipient, name=None):
+    try:
+        html_content = f"""
+            <html>
+                <body style="font-family: sans-serif; line-height: 1.6; color: #333;">
+                    <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
+                        <h2 style="color: #d4a373;">Hello{"" if not name else " " + name}!</h2>
+                        <p>Your VIP loaf selection for this week is officially locked in.</p>
+                        
+                        <div style="background: #fdfaf5; padding: 20px; border-left: 4px solid #d4a373; margin: 25px 0;">
+                            <h3 style="margin-top: 0; color: #5d4037;">You're All Set!</h3>
+                            <p style="margin-bottom: 0;">As a weekly subscriber, your payment is already covered. We will see you at pickup!</p>
+                        </div>
+                        
+                        <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+                        <small style="color: #888;">Aiara Bakery VIP</small>
+                    </div>
+                </body>
+            </html>
+        """
+        
+        url = "https://api.brevo.com/v3/smtp/email"
+        api_key = os.environ.get('BREVO_API_KEY')
+        
+        data = {
+            "sender": {"name": "Aiara Bakery", "email": "greg@aiarabakery.com"},
+            "to": [{"email": recipient}],
+            "subject": subject,
+            "htmlContent": html_content
+        }
+        
+        req = urllib.request.Request(url, data=json.dumps(data).encode('utf-8'), method='POST')
+        req.add_header('api-key', api_key)
+        req.add_header('Content-Type', 'application/json')
+        req.add_header('Accept', 'application/json')
+        
+        with urllib.request.urlopen(req) as response:
+            print(f"VIP Email sent: {response.status}")
+            
+    except Exception as e:
+        print(f"Brevo VIP API Error: {e}")
+
+@app.route('/vip')
+def vip():
+    try:
+        sheet = get_sheet()
+        items = sheet.worksheet("Menu").get_all_records()
+        visible_items = [i for i in items if i.get('Status') == 'Active']
+        
+        settings = {}
+        for i in sheet.worksheet("Settings").get_all_records():
+            if i.get('Setting Name'):
+                settings[i['Setting Name']] = i['Value']
+        
+        if settings.get('Pickup Windows'):
+            settings['window_list'] = [w.strip() for w in settings['Pickup Windows'].split(',')]
+            
+        if settings.get('DC Pickup Windows'):
+            settings['dc_window_list'] = [w.strip() for w in settings['DC Pickup Windows'].split(',')]
+            
+        return render_template('vip.html', items=visible_items, details=settings)
+    except Exception as e:
+        return f"Error: {e}"
+
+@app.route('/vip-submit', methods=['POST'])
+def vip_submit():
+    try:
+        name = request.form.get('name')
+        contact = request.form.get('contact').strip().lower()
+        order_summary = request.form.get('order_summary')
+        timestamp = datetime.now()
+        
+        sheet = get_sheet()
+        settings = {}
+        for i in sheet.worksheet("Settings").get_all_records():
+            if i.get('Setting Name'):
+                settings[i['Setting Name']] = i['Value']
+
+        loc_details = [
+            request.form.get('pickup_window'),
+            request.form.get('dc_pickup_window'),
+            request.form.get('other_location')
+        ]
+        logistics_details = " ".join([loc for loc in loc_details if loc]).strip() or "N/A"
+
+        # Logs to Orders tab with "VIP Prepaid" instead of a dollar amount
+        sheet.worksheet("Orders").append_row([
+            timestamp.strftime("%m/%d/%Y %H:%M:%S"), name, contact, order_summary, 
+            request.form.get('logistics'), logistics_details,
+            "Yes (VIP Roster)", request.form.get('notes'),
+            "VIP Prepaid", "Paid"
+        ], value_input_option='USER_ENTERED')
+
+        send_vip_email("🍞 Aiara Bakery VIP Order Confirmed!", contact, name)
+
+        return render_template('vip_success.html', name=name, details=settings)
+    except Exception as e:
+        return f"Error: {e}"
+
 # Important for Vercel
 index = app
