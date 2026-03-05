@@ -264,6 +264,32 @@ def send_vip_email(subject, recipient, name=None):
     except Exception as e:
         print(f"Brevo VIP API Error: {e}")
 
+@app.route('/early-access')
+def early_access():
+    try:
+        sheet = get_sheet()
+        items = sheet.worksheet("Menu").get_all_records()
+        visible_items = [i for i in items if i.get('Status') == 'Active']
+        
+        settings = {}
+        for i in sheet.worksheet("Settings").get_all_records():
+            if i.get('Setting Name'):
+                settings[i['Setting Name']] = i['Value']
+        
+        # THE MAGIC OVERRIDE: This forces the form to display even if the sheet says "Closed"
+        settings['Store Status'] = 'Open' 
+        
+        if settings.get('Pickup Windows'):
+            settings['window_list'] = [w.strip() for w in settings['Pickup Windows'].split(',')]
+            
+        if settings.get('DC Pickup Windows'):
+            settings['dc_window_list'] = [w.strip() for w in settings['DC Pickup Windows'].split(',')]
+            
+        # It reuses your standard index.html homepage, just forcing it open!
+        return render_template('index.html', items=visible_items, details=settings)
+    except Exception as e:
+        return f"Error: {e}"
+
 @app.route('/vip')
 def vip():
     try:
