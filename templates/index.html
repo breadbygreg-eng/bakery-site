@@ -188,9 +188,10 @@
                             <input type="checkbox" name="join_list" id="joinList" value="yes" checked style="width: auto; margin: 0 10px 0 0;"> 
                             Add me to the weekly menu distribution
                         </label>
-                        <label style="display: flex; align-items: center; cursor: pointer;">
-                            <input type="checkbox" name="subscription" value="yes" style="width: auto; margin: 0 10px 0 0;"> 
-                            I'm interested in becoming a weekly subscriber
+                        <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 25px; padding: 15px; background: #fdfaf5; border: 1px solid var(--accent-gold); border-radius: 4px;">
+                            <input type="checkbox" name="subscription" value="yes" style="width: 20px; height: 20px; cursor: pointer;">
+                            <span style="font-weight: bold; color: var(--primary-brown); font-size: 1.1rem;">Make this a Weekly Subscription</span>
+                            <a href="#" onclick="openSubModal(event)" style="color: var(--venmo-blue); font-size: 0.9rem; text-decoration: underline; margin-left: auto;">What's this?</a>
                         </label>
                     </div>
                     
@@ -269,9 +270,72 @@
             return true;
         };
     </script>
+<div style="text-align: center; margin-top: 50px; padding: 40px 20px; background: rgba(0,0,0,0.4); border-radius: 4px; border-top: 2px solid var(--accent-gold);">
+            <h3 style="font-family: 'Playfair Display', serif; margin-top: 0;">Not ready to order? Did we sell out of your favorites?</h3>
+            <p style="font-size: 0.9rem; max-width: 400px; margin: 0 auto 20px auto;">Join our list to get the menu delivered to your inbox every week so you don't miss the next bake.</p>
+            
+            <form action="/subscribe" method="POST" style="max-width: 400px; margin: 0 auto;">
+                <input type="email" name="email" placeholder="Enter your email..." required 
+                       style="margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white;">
+                <button type="submit" style="padding: 12px; background: transparent; color: white; border: 2px solid var(--accent-gold); font-size: 0.8rem;">Notify Me</button>
+            </form>
+        </div> </div> <script>
+        function toggleLogistics() {
+            const val = document.getElementById('logistics').value;
+            document.getElementById('pickupArea').style.display = val === 'Clarksburg Resident (Pickup)' ? 'block' : 'none';
+            document.getElementById('dcArea').style.display = val === 'Washington, DC 29th St NW' ? 'block' : 'none';
+            document.getElementById('schoolArea').style.display = val === 'WWS (Pickup)' ? 'block' : 'none';
+        }
+        document.getElementById('orderForm').onsubmit = function() {
+            let summary = [];
+            let total = 0;
+            document.querySelectorAll('.qty-select').forEach(select => {
+                let qty = parseInt(select.value);
+                if (qty > 0) {
+                    summary.push(qty + "x " + select.getAttribute('data-name'));
+                    total += qty * parseFloat(select.getAttribute('data-price'));
+                }
+            });
+    
+            if (summary.length === 0) { alert("Please select at least one loaf!"); return false; }
+            document.getElementById('orderSummary').value = summary.join(", ");
+            document.getElementById('orderTotal').value = total.toFixed(2); // Sends the exact dollar amount
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('submitBtn').innerText = "Processing...";
+            return true;
+        };
+    </script>
+
+    <div id="subModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; padding: 35px; border-radius: 8px; max-width: 450px; width: 90%; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.3);">
+            
+            <button onclick="closeSubModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.8rem; cursor: pointer; color: #888;">&times;</button>
+            
+            <h3 style="font-family: 'Playfair Display', serif; color: var(--primary-brown); margin-top: 0; font-size: 1.5rem;">The Weekly Bread Subscription</h3>
+            <p style="font-size: 1rem; line-height: 1.6; color: #444;">Secure your loaf before the menu even drops! Here is how it works:</p>
+            
+            <ul style="font-size: 0.95rem; line-height: 1.6; color: #444; padding-left: 20px; margin-bottom: 25px;">
+                <li style="margin-bottom: 10px;"><strong>Guaranteed Bread:</strong> We bake your selected loaf every single week. No need to fight the rush or worry about us selling out.</li>
+                <li style="margin-bottom: 10px;"><strong>Simple Billing:</strong> Subscriptions are billed monthly ($40/month) for one large format loaf per week.</li>
+                <li><strong>Flexibility:</strong> Going out of town? Just shoot us an email to pause your subscription for the week.</li>
+            </ul>
+            
+            <p style="font-size: 0.95rem; line-height: 1.6; color: #444; font-style: italic; border-left: 3px solid var(--accent-gold); padding-left: 15px;">Check the box at checkout, and we will email you the monthly payment details to get you officially on the roster!</p>
+            
+            <button onclick="closeSubModal()" style="width: 100%; padding: 15px; background: var(--accent-gold); color: white; border: none; border-radius: 4px; font-weight: bold; font-size: 1.1rem; cursor: pointer; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px;">Got it</button>
+        </div>
+    </div>
+
+    <script>
+        function openSubModal(e) {
+            e.preventDefault();
+            document.getElementById('subModal').style.display = 'flex';
+        }
+        function closeSubModal() {
+            document.getElementById('subModal').style.display = 'none';
+        }
+    </script>            
 </body>
 </html>
-
-
 
 
