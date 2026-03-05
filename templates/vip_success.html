@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loaf Locked In | Aiara Bakery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary-brown: #5d4037; --accent-gold: #d4a373; }
+        body { margin: 0; padding: 0; font-family: 'Lato', sans-serif; background: radial-gradient(circle at center, #2e241c 0%, #120e0c 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; color: #333; }
+        .card { background: rgba(255, 255, 255, 0.98); padding: 40px; border-radius: 4px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border-top: 6px solid var(--accent-gold); max-width: 500px; width: 90%; text-align: center; }
+        h1 { font-family: 'Playfair Display', serif; color: var(--primary-brown); font-style: italic; font-size: 2.2rem; margin-top: 0; }
+        .details { text-align: left; background: #fdfaf5; padding: 25px; border-left: 4px solid var(--accent-gold); margin: 30px 0; border-radius: 2px; }
+        .details h3 { font-family: 'Playfair Display', serif; color: var(--primary-brown); margin-top: 0; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Loaf Locked In!</h1>
+        <p>Thanks, <strong>{{ name }}</strong>. Your VIP selection is on the bake list.</p>
+        
+        <div class="details">
+            <h3>You're all set!</h3>
+            <p style="margin-bottom: 0;">As a weekly subscriber, your payment is already handled. We will have your order ready for you at your selected pickup time.</p>
+        </div>
+
+        <p style="font-size: 0.85rem; color: #777; margin-top: 20px;">Need to change your pickup time? Email <strong>greg@aiarabakery.com</strong></p>
+    </div>
+</body>
+</html>
