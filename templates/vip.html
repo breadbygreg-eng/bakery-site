@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIP Portal | Aiara Bakery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary-brown: #5d4037; --accent-gold: #d4a373; }
+        body { margin: 0; padding: 0; font-family: 'Lato', sans-serif; background: radial-gradient(circle at center, #2e241c 0%, #120e0c 100%); color: white; min-height: 100vh; }
+        .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
+        header { text-align: center; margin-bottom: 40px; }
+        header h1 { font-family: 'Playfair Display', serif; font-size: 3.5rem; margin-bottom: 5px; font-style: italic; color: var(--accent-gold); }
+        .bake-info { background: rgba(255, 255, 255, 0.95); color: #333; padding: 15px; text-align: center; border-radius: 4px; margin-bottom: 30px; border-bottom: 4px solid var(--accent-gold); }
+        .menu-section { background: rgba(255, 255, 255, 0.98); color: #333; padding: 30px; border-radius: 4px; margin-bottom: 20px; }
+        .item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #eee; }
+        .qty-row { display: flex; align-items: center; justify-content: flex-end; min-width: 80px; }
+        .qty-select { width: 70px; padding: 5px; border: 1px solid #ddd; border-radius: 4px; height: 38px; font-weight: bold; background: #fff; color: #333; cursor: pointer; }
+        .order-form { background: #fdfaf5; color: #333; padding: 40px; border-radius: 4px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); border-top: 4px solid var(--primary-brown); }
+        label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 0.9rem; color: var(--primary-brown); }
+        input, select, textarea { width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 2px; border: 1px solid #ccc; box-sizing: border-box; font-family: 'Lato', sans-serif; }
+        button { width: 100%; padding: 20px; background: var(--primary-brown); color: white; border: none; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: 0.3s; }
+        button:hover { background: var(--accent-gold); color: var(--primary-brown); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>VIP Portal</h1>
+            <p style="text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem;">Aiara Bakery • Weekly Subscribers</p>
+        </header>
+
+        <div class="bake-info">
+            <small style="text-transform: uppercase; color: #888; font-weight: bold;">Select your loaf for the upcoming bake:</small><br>
+            <strong style="font-size: 1.2rem;">{{ details['Next Bake Date'] }}</strong>
+        </div>
+
+        <div class="menu-section">
+            <h2 style="font-family: 'Playfair Display', serif; color: var(--primary-brown); margin: 0 0 10px 0; border-bottom: 2px solid var(--primary-brown); padding-bottom: 5px;">This Week's Loaves</h2>
+            
+            {% for item in items %}
+            <div class="item">
+                <div style="flex-grow: 1; padding-right: 10px;">
+                    <strong>{{ item['Item Name'] }}</strong>
+                    <br><small style="color: #666; font-style: italic;">{{ item['Description'] }}</small>
+                </div>
+                <div class="qty-row">
+                    <select class="qty-select" data-name="{{ item['Item Name'] }}">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                    </select>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="order-form">
+            <h2 style="font-family: 'Playfair Display', serif; margin-top: 0; color: var(--primary-brown);">Pickup Details</h2>
+            <form action="/vip-submit" method="POST" id="vipForm">
+                <input type="hidden" name="order_summary" id="orderSummary">
+                
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" required>
+
+                <label for="contact">Email</label>
+                <input type="email" id="contact" name="contact" required>
+                
+                <label for="logistics">How will you get your bread?</label>
+                <select id="logistics" name="logistics" required onchange="toggleLogistics()">
+                    <option value="" disabled selected>Select an option...</option>
+                    <option value="Clarksburg Resident (Pickup)">Clarksburg Resident (Pickup)</option>
+                    <option value="Washington, DC 29th St NW">Washington, DC 29th St NW</option>
+                    <option value="WWS (Pickup)">WWS (Pickup)</option>
+                </select>
+
+                <div id="pickupArea" style="display:none; margin-bottom: 20px;">
+                    <label>Select Clarksburg Pickup Time:</label>
+                    <select name="pickup_window">
+                        {% for window in details['window_list'] %}<option value="{{ window }}">{{ window }}</option>{% endfor %}
+                    </select>
+                </div>
+
+                <div id="dcArea" style="display:none; margin-bottom: 20px;">
+                    <label>Select DC Pickup Time:</label>
+                    <select name="dc_pickup_window">
+                        {% if details['dc_window_list'] %}
+                            {% for window in details['dc_window_list'] %}<option value="{{ window }}">{{ window }}</option>{% endfor %}
+                        {% else %}
+                            <option value="TBD">Time TBD</option>
+                        {% endif %}
+                    </select>
+                </div>
+
+                <div id="schoolArea" style="display:none; margin-bottom: 20px;">
+                    <p style="font-size: 0.9rem; color: #555;"><strong>Pickup Info:</strong> {{ details['WWS (Pickup) Info'] }}</p>
+                </div>
+
+                <label for="notes">Notes (Vacation holds, etc.)</label>
+                <textarea id="notes" name="notes" rows="2"></textarea>
+                
+                <button type="submit" id="submitBtn">Lock in my Loaf</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function toggleLogistics() {
+            const val = document.getElementById('logistics').value;
+            document.getElementById('pickupArea').style.display = val === 'Clarksburg Resident (Pickup)' ? 'block' : 'none';
+            document.getElementById('dcArea').style.display = val === 'Washington, DC 29th St NW' ? 'block' : 'none';
+            document.getElementById('schoolArea').style.display = val === 'WWS (Pickup)' ? 'block' : 'none';
+        }
+        document.getElementById('vipForm').onsubmit = function() {
+            let summary = [];
+            document.querySelectorAll('.qty-select').forEach(select => {
+                let qty = parseInt(select.value);
+                if (qty > 0) { summary.push(qty + "x " + select.getAttribute('data-name')); }
+            });
+    
+            if (summary.length === 0) { alert("Please select a loaf!"); return false; }
+            document.getElementById('orderSummary').value = summary.join(", ");
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('submitBtn').innerText = "Processing...";
+            return true;
+        };
+    </script>
+</body>
+</html>
