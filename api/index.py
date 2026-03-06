@@ -68,7 +68,7 @@ def send_bakery_email(subject, recipient, name=None, total="0.00"):
                             
                             <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 0 0 15px 0;">
                             <p style="margin: 0; font-size: 0.9em; color: #555;">
-                                <strong>No Venmo?</strong> We also accept Zelle. Please send your Zelle payment to <strong>202-417-5078</strong>. 
+                                <strong>No Venmo?</strong> We also accept Zelle. Please send your Zelle payment to <strong>breadbygreg@gmail.com</strong>. 
                                 <br><span style="font-size: 0.85em; font-style: italic;">(Please note: Zelle payments route to personal banking, so the name may appear differently than Aiara Bakery).</span>
                             </p>
                         </div>                       
