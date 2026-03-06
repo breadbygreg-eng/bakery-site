@@ -170,7 +170,11 @@
 
         <div class="order-form">
             {% if details['Store Status'] == 'Closed' %}
-                <div style="text-align: center; padding: 20px;"><h2>Oven is Resting</h2></div>
+                <div style="text-align: center; padding: 30px 20px;">
+                    <h2 style="color: var(--accent-gold); font-family: 'Playfair Display', serif; font-size: 2.2rem; margin-top: 0;">Oven is Resting</h2>
+                    <p style="font-size: 1.1rem; line-height: 1.6; margin-top: 15px;">Ordering for this bake is currently closed.</p>
+                    <p style="font-size: 0.95rem; line-height: 1.6;">Please join the list below to be notified when the menu opens for the next bake.</p>
+                </div>
             {% else %}
                 <h2 style="font-family: 'Playfair Display', serif; margin-top: 0;">Order Details</h2>
                 <form action="/submit" method="POST" id="orderForm">
@@ -188,10 +192,10 @@
                             <input type="checkbox" name="join_list" id="joinList" value="yes" checked style="width: auto; margin: 0 10px 0 0;"> 
                             Add me to the weekly menu distribution
                         </label>
-                        <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 25px; padding: 15px; background: #fdfaf5; border: 1px solid var(--accent-gold); border-radius: 4px;">
-                            <input type="checkbox" name="subscription" value="yes" style="width: 20px; height: 20px; cursor: pointer;">
-                            <span style="font-weight: bold; color: var(--primary-brown); font-size: 1.1rem;">Make this a Weekly Subscription</span>
-                            <a href="#" onclick="openSubModal(event)" style="color: var(--venmo-blue); font-size: 0.9rem; text-decoration: underline; margin-left: auto;">What's this?</a>
+                        <label style="display: flex; align-items: center; justify-content: flex-start; margin-bottom: 25px; padding: 15px; background: #fdfaf5; border: 1px solid var(--accent-gold); border-radius: 4px;">
+                            <input type="checkbox" name="subscription" value="yes" style="width: 18px; height: 18px; margin: 0 12px 0 0; cursor: pointer;">
+                            <span style="font-weight: bold; color: var(--primary-brown); font-size: 1rem; line-height: 1;">Make this a Weekly Subscription</span>
+                            <a href="#" onclick="openSubModal(event)" style="color: #008CFF; font-size: 0.9rem; text-decoration: underline; margin-left: auto;">What's this?</a>
                         </label>
                     </div>
                     
@@ -244,7 +248,9 @@
                 <button type="submit" style="padding: 12px; background: transparent; color: white; border: 2px solid var(--accent-gold); font-size: 0.8rem;">Notify Me</button>
             </form>
         </div> 
-    </div> <script>
+    </div>
+    
+    <script>
         function toggleLogistics() {
             const val = document.getElementById('logistics').value;
             document.getElementById('pickupArea').style.display = val === 'Clarksburg Resident (Pickup)' ? 'block' : 'none';
@@ -285,8 +291,7 @@
                 <li><strong>Flexibility:</strong> Going out of town? Just shoot us an email to pause your subscription for the week.</li>
             </ul>
             
-            <p style="font-size: 0.95rem; line-height: 1.6; color: #444; font-style: italic; border-left: 3px solid var(--accent-gold); padding-left: 15px;">Check the box at checkout, and we will email you the monthly payment details to get you officially on the roster!</p>
-            
+            <p style="font-size: 0.95rem; line-height: 1.6; color: #444; font-style: italic; border-left: 3px solid var(--accent-gold); padding-left: 15px;">Check the box to become a subscriber, and we will email you the monthly payment details to get you officially on the roster!</p>            
             <button onclick="closeSubModal()" style="width: 100%; padding: 15px; background: var(--accent-gold); color: white; border: none; border-radius: 4px; font-weight: bold; font-size: 1.1rem; cursor: pointer; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px;">Got it</button>
         </div>
     </div>
