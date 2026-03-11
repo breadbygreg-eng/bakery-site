@@ -179,8 +179,9 @@ def submit():
         send_bakery_email("🍞 Aiara Bakery Order Received!", contact, name, order_total)
 
         msg = f"Your order is in! (Note: It arrived after the {deadline_text} cutoff, so we will confirm your bake day shortly.)" if is_late else f"Thanks {name}, your order is confirmed for our next bake day!"
-        
-        return render_template('success.html', name=name, message=msg, is_late=is_late, details=settings, total=order_total)
+
+        # NEW: Redirect to a clean GET route to prevent duplicate submissions
+        return redirect(url_for('success', name=name, total=order_total, is_late=is_late))
     except Exception as e:
         return f"Error: {e}"
         
@@ -342,6 +343,45 @@ def vip_submit():
         ], value_input_option='USER_ENTERED')
 
         send_vip_email("🍞 Aiara Bakery VIP Order Confirmed!", contact, name)
+
+        # NEW: Redirect to a clean GET route
+        return redirect(url_for('vip_success', name=name))
+    except Exception as e:
+        return f"Error: {e}"
+
+@app.route('/success')
+def success():
+    try:
+        # Pull the variables out of the URL that we passed in the redirect
+        name = request.args.get('name', '')
+        total = request.args.get('total', '0.00')
+        is_late = request.args.get('is_late') == 'True'
+
+        # Fetch settings for the template details
+        sheet = get_sheet()
+        settings = {}
+        for i in sheet.worksheet("Settings").get_all_records():
+            if i.get('Setting Name'):
+                settings[i['Setting Name']] = i['Value']
+
+        # Reconstruct the message
+        _, _, deadline_text = get_bake_settings()
+        msg = f"Your order is in! (Note: It arrived after the {deadline_text} cutoff, so we will confirm your bake day shortly.)" if is_late else f"Thanks {name}, your order is confirmed for our next bake day!"
+
+        return render_template('success.html', name=name, message=msg, is_late=is_late, details=settings, total=total)
+    except Exception as e:
+        return f"Error: {e}"
+
+@app.route('/vip-success')
+def vip_success():
+    try:
+        name = request.args.get('name', '')
+        
+        sheet = get_sheet()
+        settings = {}
+        for i in sheet.worksheet("Settings").get_all_records():
+            if i.get('Setting Name'):
+                settings[i['Setting Name']] = i['Value']
 
         return render_template('vip_success.html', name=name, details=settings)
     except Exception as e:
