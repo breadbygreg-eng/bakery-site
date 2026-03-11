@@ -131,8 +131,13 @@
         </header>
 
         <div class="bake-info">
-            <small style="text-transform: uppercase; color: #888; font-weight: bold;">Next Bake (Orders must be received one day prior):</small><br>
-            <strong style="font-size: 1.2rem;">{{ details['Next Bake Date'] }}</strong>
+            {% if details['Store Status'] == 'Pre-Order' %}
+                <small style="text-transform: uppercase; color: #888; font-weight: bold;">Next Bake:</small><br>
+                <strong style="font-size: 1.2rem;">Sometime Next Week (Schedule dropping Friday)</strong>
+            {% else %}
+                <small style="text-transform: uppercase; color: #888; font-weight: bold;">Next Bake (Orders must be received one day prior):</small><br>
+                <strong style="font-size: 1.2rem;">{{ details['Next Bake Date'] }}</strong>
+            {% endif %}
         </div>
 
         <div class="menu-section">
@@ -201,11 +206,15 @@
                     
                     <label for="logistics">How will you get your bread?</label>
                     <select id="logistics" name="logistics" required onchange="toggleLogistics()">
-                        <option value="" disabled selected>Select an option...</option>
-                        <option value="Clarksburg Resident (Pickup)">Clarksburg Resident (Pickup)</option>
-                        <option value="Washington, DC 29th St NW">Washington, DC 29th St NW</option>
-                        <option value="WWS (Pickup)">WWS (Pickup)</option>
-                        <option value="Other (Please detail in Notes)">Other (Please detail in Notes)</option>
+                        {% if details['Store Status'] == 'Pre-Order' %}
+                            <option value="Pre-Order (Schedule TBD)" selected>Schedule TBD - We will email you exact pickup windows on Friday</option>
+                        {% else %}
+                            <option value="" disabled selected>Select an option...</option>
+                            <option value="Clarksburg Resident (Pickup)">Clarksburg Resident (Pickup)</option>
+                            <option value="Washington, DC 29th St NW">Washington, DC 29th St NW</option>
+                            <option value="WWS (Pickup)">WWS (Pickup)</option>
+                            <option value="Other (Please detail in Notes)">Other (Please detail in Notes)</option>
+                        {% endif %}
                     </select>
 
                     <div id="pickupArea" style="display:none; margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.2);">
@@ -307,3 +316,4 @@
     </script>            
 </body>
 </html>
+
