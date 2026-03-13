@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 import os
 import json
 import urllib.request
@@ -38,7 +39,7 @@ def get_bake_settings():
                 continue
         
         if not bake_date_dt:
-            bake_date_dt = datetime.now() + timedelta(days=7)
+            bake_date_dt = datetime.now(ZoneInfo('America/New_York')) + timedelta(days=7)
 
         deadline_dt = bake_date_dt - timedelta(days=1)
         deadline_dt = deadline_dt.replace(hour=23, minute=59)
@@ -46,7 +47,7 @@ def get_bake_settings():
         return bake_date_dt, deadline_dt, deadline_dt.strftime("%A, %B %d at 11:59 PM")
     except Exception as e:
         print(f"Settings Error: {e}")
-        future = datetime.now() + timedelta(days=1)
+        future = datetime.now(ZoneInfo('America/New_York')) + timedelta(days=1)
         return future, future, "the night before bake day"
 
 def send_bakery_email(subject, recipient, name=None, total="0.00"):
@@ -71,7 +72,7 @@ def send_bakery_email(subject, recipient, name=None, total="0.00"):
                                 <strong>No Venmo?</strong> We also accept Zelle. Please send your Zelle payment to <strong>breadbygreg@gmail.com</strong>. 
                                 <br><span style="font-size: 0.85em; font-style: italic;">(Please note: Zelle payments route to personal banking, so the name may appear differently than Aiara Bakery).</span>
                             </p>
-                        </div>                       
+                        </div>                        
                         <p>A quick reminder: orders for the upcoming bake close on <strong>{deadline_text}</strong>.</p>
                         <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
                         <small style="color: #888;">Aiara Bakery | <a href="{unsubscribe_url}">Unsubscribe</a></small>
@@ -136,7 +137,7 @@ def submit():
         contact = request.form.get('contact').strip().lower()
         order_summary = request.form.get('order_summary')
         order_total = request.form.get('order_total', '0.00')
-        timestamp = datetime.now()
+        timestamp = datetime.now(ZoneInfo('America/New_York'))
         
         _, deadline_dt, deadline_text = get_bake_settings()
         is_late = timestamp > deadline_dt
@@ -178,8 +179,6 @@ def submit():
         # Send confirmation email for every order, now passing the total price
         send_bakery_email("🍞 Aiara Bakery Order Received!", contact, name, order_total)
 
-        msg = f"Your order is in! (Note: It arrived after the {deadline_text} cutoff, so we will confirm your bake day shortly.)" if is_late else f"Thanks {name}, your order is confirmed for our next bake day!"
-
         # NEW: Redirect to a clean GET route to prevent duplicate submissions
         return redirect(url_for('success', name=name, total=order_total, is_late=is_late))
     except Exception as e:
@@ -192,7 +191,7 @@ def subscribe():
         if not email:
             return redirect(url_for('home'))
 
-        timestamp = datetime.now()
+        timestamp = datetime.now(ZoneInfo('America/New_York'))
         sheet = get_sheet()
         sub_sheet = sheet.worksheet("Subscribers")
         
@@ -319,7 +318,7 @@ def vip_submit():
         name = request.form.get('name')
         contact = request.form.get('contact').strip().lower()
         order_summary = request.form.get('order_summary')
-        timestamp = datetime.now()
+        timestamp = datetime.now(ZoneInfo('America/New_York'))
         
         sheet = get_sheet()
         settings = {}
