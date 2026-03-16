@@ -34,6 +34,8 @@ def get_bake_settings():
         for fmt in formats:
             try:
                 bake_date_dt = datetime.strptime(bake_date_str, fmt)
+                # FIX: Make the spreadsheet date timezone-aware
+                bake_date_dt = bake_date_dt.replace(tzinfo=ZoneInfo('America/New_York'))
                 break
             except ValueError:
                 continue
