@@ -102,6 +102,55 @@ def send_bakery_email(subject, recipient, name=None, total="0.00"):
     except Exception as e:
         print(f"Brevo API Error: {e}")
 
+def send_subscription_email(subject, recipient, name=None):
+    try:
+        html_content = f"""
+            <html>
+                <body style="font-family: sans-serif; line-height: 1.6; color: #333;">
+                    <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
+                        <h2 style="color: #d4a373;">Welcome to the VIP Carb Club{"" if not name else ", " + name}! 🍞</h2>
+                        <p>You did it. You checked the box. You are officially on the Aiara Bakery VIP roster, which means you never have to panic-refresh the menu on a Friday ever again. Your bread is officially secured.</p>
+                        
+                        <div style="background: #fdfaf5; padding: 20px; border-left: 4px solid #d4a373; margin: 25px 0;">
+                            <h3 style="margin-top: 0; color: #5d4037;">How the Billing Works</h3>
+                            <p style="margin-bottom: 10px;">We keep things simple. Subscriptions are billed monthly based on your loaf size:</p>
+                            <ul style="margin-top: 0; padding-left: 20px;">
+                                <li><strong>Small Loaf (650g):</strong> $30 / month</li>
+                                <li><strong>Large Loaf (1kg):</strong> $40 / month</li>
+                            </ul>
+                            <p style="margin-bottom: 0;"><strong>Next Steps:</strong> I will be sending over your first monthly payment request shortly via Venmo or email. Once that is settled, your spot is permanently locked in and the dough is as good as baked.</p>
+                        </div>
+                        
+                        <p>Need to pause for a vacation? Just reply to this email and let me know. Otherwise, welcome to the club!</p>
+                        
+                        <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+                        <small style="color: #888;">Aiara Bakery</small>
+                    </div>
+                </body>
+            </html>
+        """
+        
+        url = "https://api.brevo.com/v3/smtp/email"
+        api_key = os.environ.get('BREVO_API_KEY')
+        
+        data = {
+            "sender": {"name": "Aiara Bakery", "email": "greg@aiarabakery.com"},
+            "to": [{"email": recipient}],
+            "subject": subject,
+            "htmlContent": html_content
+        }
+        
+        req = urllib.request.Request(url, data=json.dumps(data).encode('utf-8'), method='POST')
+        req.add_header('api-key', api_key)
+        req.add_header('Content-Type', 'application/json')
+        req.add_header('Accept', 'application/json')
+        
+        with urllib.request.urlopen(req) as response:
+            print(f"Subscription Email sent: {response.status}")
+            
+    except Exception as e:
+        print(f"Brevo Subscription API Error: {e}")
+
 @app.route('/')
 def home():
     try:
@@ -122,7 +171,6 @@ def home():
             
         return render_template('index.html', items=visible_items, details=settings)
     except Exception as e:
-        # DIAGNOSTIC FIX: This will print the exact Google Sheets error to your screen instead of crashing
         return f"""
             <div style="padding: 50px; font-family: sans-serif; text-align: center;">
                 <h2 style="color: #c53030;">Google Sheets Connection Error</h2>
@@ -130,6 +178,7 @@ def home():
                 <code style="background: #eee; padding: 10px; display: inline-block; border-radius: 4px;">{e}</code>
             </div>
         """
+
 @app.route('/submit', methods=['POST'])
 def submit():
     try:
@@ -156,11 +205,13 @@ def submit():
         ]
         logistics_details = " ".join([loc for loc in loc_details if loc]).strip() or "N/A"
 
-        # Note the two new columns added at the end of the append_row list!
+        # Check if they opted into the subscription
+        is_subscribing = True if request.form.get('subscription') else False
+
         sheet.worksheet("Orders").append_row([
             timestamp.strftime("%m/%d/%Y %H:%M:%S"), name, contact, order_summary, 
             request.form.get('logistics'), logistics_details,
-            "Yes" if request.form.get('subscription') else "No", request.form.get('notes'),
+            "Yes" if is_subscribing else "No", request.form.get('notes'),
             f"${order_total}", "Pending"
         ], value_input_option='USER_ENTERED')
 
@@ -168,7 +219,6 @@ def submit():
             sub_sheet = sheet.worksheet("Subscribers")
             
             try:
-                # Safely grab existing emails in column B
                 existing_emails = sub_sheet.col_values(2)
             except Exception:
                 existing_emails = []
@@ -176,10 +226,13 @@ def submit():
             if contact not in existing_emails:
                 sub_sheet.append_row([timestamp.strftime("%m/%d/%Y %H:%M:%S"), contact, 'Active'], value_input_option='USER_ENTERED')     
                 
-        # Send confirmation email for every order, now passing the total price
+        # Send standard confirmation email
         send_bakery_email("🍞 Aiara Bakery Order Received!", contact, name, order_total)
+        
+        # Send VIP welcome email if they checked the box
+        if is_subscribing:
+            send_subscription_email("🍞 Welcome to the Aiara Bakery VIP Roster!", contact, name)
 
-        # NEW: Redirect to a clean GET route to prevent duplicate submissions
         return redirect(url_for('success', name=name, total=order_total, is_late=is_late))
     except Exception as e:
         return f"Error: {e}"
@@ -196,12 +249,10 @@ def subscribe():
         sub_sheet = sheet.worksheet("Subscribers")
         
         try:
-            # Safely grab existing emails in column B
             existing_emails = sub_sheet.col_values(2)
         except Exception:
             existing_emails = []
 
-        # Check if they are already on the list so we don't get duplicates
         if email not in existing_emails:
             sub_sheet.append_row([
                 timestamp.strftime("%m/%d/%Y %H:%M:%S"), 
@@ -209,7 +260,6 @@ def subscribe():
                 'Active'
             ], value_input_option='USER_ENTERED')
             
-        # Point back to your actual success page!
         return render_template('subscribe_success.html', email=email)
         
     except Exception as e:
@@ -276,7 +326,6 @@ def early_access():
             if i.get('Setting Name'):
                 settings[i['Setting Name']] = i['Value']
         
-        # THE MAGIC OVERRIDE: This forces the form to display even if the sheet says "Closed"
         settings['Store Status'] = 'Open' 
         
         if settings.get('Pickup Windows'):
@@ -285,7 +334,6 @@ def early_access():
         if settings.get('DC Pickup Windows'):
             settings['dc_window_list'] = [w.strip() for w in settings['DC Pickup Windows'].split(',')]
             
-        # It reuses your standard index.html homepage, just forcing it open!
         return render_template('index.html', items=visible_items, details=settings)
     except Exception as e:
         return f"Error: {e}"
@@ -333,7 +381,6 @@ def vip_submit():
         ]
         logistics_details = " ".join([loc for loc in loc_details if loc]).strip() or "N/A"
 
-        # Logs to Orders tab with "VIP Prepaid" instead of a dollar amount
         sheet.worksheet("Orders").append_row([
             timestamp.strftime("%m/%d/%Y %H:%M:%S"), name, contact, order_summary, 
             request.form.get('logistics'), logistics_details,
@@ -343,7 +390,6 @@ def vip_submit():
 
         send_vip_email("🍞 Aiara Bakery VIP Order Confirmed!", contact, name)
 
-        # NEW: Redirect to a clean GET route
         return redirect(url_for('vip_success', name=name))
     except Exception as e:
         return f"Error: {e}"
@@ -351,19 +397,16 @@ def vip_submit():
 @app.route('/success')
 def success():
     try:
-        # Pull the variables out of the URL that we passed in the redirect
         name = request.args.get('name', '')
         total = request.args.get('total', '0.00')
         is_late = request.args.get('is_late') == 'True'
 
-        # Fetch settings for the template details
         sheet = get_sheet()
         settings = {}
         for i in sheet.worksheet("Settings").get_all_records():
             if i.get('Setting Name'):
                 settings[i['Setting Name']] = i['Value']
 
-        # Reconstruct the message
         _, _, deadline_text = get_bake_settings()
         msg = f"Your order is in! (Note: It arrived after the {deadline_text} cutoff, so we will confirm your bake day shortly.)" if is_late else f"Thanks {name}, your order is confirmed for our next bake day!"
 
