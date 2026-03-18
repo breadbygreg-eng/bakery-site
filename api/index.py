@@ -200,7 +200,7 @@ def submit():
             if i.get('Setting Name'):
                 settings[i['Setting Name']] = i['Value']
 
-logistics_choice = request.form.get('logistics')
+        logistics_choice = request.form.get('logistics')
         
         if logistics_choice == 'Clarksburg Resident (Pickup)':
             logistics_details = request.form.get('pickup_window', 'N/A')
@@ -378,7 +378,7 @@ def vip_submit():
             if i.get('Setting Name'):
                 settings[i['Setting Name']] = i['Value']
 
-logistics_choice = request.form.get('logistics')
+        logistics_choice = request.form.get('logistics')
         
         if logistics_choice == 'Clarksburg Resident (Pickup)':
             logistics_details = request.form.get('pickup_window', 'N/A')
