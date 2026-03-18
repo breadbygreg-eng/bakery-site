@@ -200,12 +200,14 @@ def submit():
             if i.get('Setting Name'):
                 settings[i['Setting Name']] = i['Value']
 
-        loc_details = [
-            request.form.get('pickup_window'),
-            request.form.get('dc_pickup_window'),
-            request.form.get('other_location')
-        ]
-        logistics_details = " ".join([loc for loc in loc_details if loc]).strip() or "N/A"
+logistics_choice = request.form.get('logistics')
+        
+        if logistics_choice == 'Clarksburg Resident (Pickup)':
+            logistics_details = request.form.get('pickup_window', 'N/A')
+        elif logistics_choice == 'Washington, DC 29th St NW':
+            logistics_details = request.form.get('dc_pickup_window', 'N/A')
+        else:
+            logistics_details = "N/A"
 
         # Check if they opted into the subscription
         is_subscribing = True if request.form.get('subscription') else False
@@ -376,12 +378,14 @@ def vip_submit():
             if i.get('Setting Name'):
                 settings[i['Setting Name']] = i['Value']
 
-        loc_details = [
-            request.form.get('pickup_window'),
-            request.form.get('dc_pickup_window'),
-            request.form.get('other_location')
-        ]
-        logistics_details = " ".join([loc for loc in loc_details if loc]).strip() or "N/A"
+logistics_choice = request.form.get('logistics')
+        
+        if logistics_choice == 'Clarksburg Resident (Pickup)':
+            logistics_details = request.form.get('pickup_window', 'N/A')
+        elif logistics_choice == 'Washington, DC 29th St NW':
+            logistics_details = request.form.get('dc_pickup_window', 'N/A')
+        else:
+            logistics_details = "N/A"
 
         sheet.worksheet("Orders").append_row([
             timestamp.strftime("%m/%d/%Y %H:%M:%S"), name, contact, order_summary, 
