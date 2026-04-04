@@ -170,6 +170,9 @@ def home():
             
         if settings.get('DC Pickup Windows'):
             settings['dc_window_list'] = [w.strip() for w in settings['DC Pickup Windows'].split(',')]
+
+        if settings.get('WWS (Pickup) Info'):
+            settings['wws_window_list'] = [w.strip() for w in settings['WWS (Pickup) Info'].split(',')]
             
         return render_template('index.html', items=visible_items, details=settings)
     except Exception as e:
@@ -337,6 +340,9 @@ def early_access():
             
         if settings.get('DC Pickup Windows'):
             settings['dc_window_list'] = [w.strip() for w in settings['DC Pickup Windows'].split(',')]
+
+        if settings.get('WWS (Pickup) Info'):
+            settings['wws_window_list'] = [w.strip() for w in settings['WWS (Pickup) Info'].split(',')]
             
         return render_template('index.html', items=visible_items, details=settings)
     except Exception as e:
@@ -359,6 +365,9 @@ def vip():
             
         if settings.get('DC Pickup Windows'):
             settings['dc_window_list'] = [w.strip() for w in settings['DC Pickup Windows'].split(',')]
+
+        if settings.get('WWS (Pickup) Info'):
+            settings['wws_window_list'] = [w.strip() for w in settings['WWS (Pickup) Info'].split(',')]
             
         return render_template('vip.html', items=visible_items, details=settings)
     except Exception as e:
