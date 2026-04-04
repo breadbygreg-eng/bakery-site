@@ -209,6 +209,8 @@ def submit():
             logistics_details = request.form.get('pickup_window', 'N/A')
         elif logistics_choice == 'Washington, DC 29th St NW':
             logistics_details = request.form.get('dc_pickup_window', 'N/A')
+        elif logistics_choice == 'WWS (Pickup)':
+            logistics_details = request.form.get('wws_pickup_window', 'N/A')
         else:
             logistics_details = "N/A"
 
@@ -386,13 +388,15 @@ def vip_submit():
         for i in sheet.worksheet("Settings").get_all_records():
             if i.get('Setting Name'):
                 settings[i['Setting Name']] = i['Value']
-
+                
         logistics_choice = request.form.get('logistics')
-        
+            
         if logistics_choice == 'Clarksburg Resident (Pickup)':
             logistics_details = request.form.get('pickup_window', 'N/A')
         elif logistics_choice == 'Washington, DC 29th St NW':
             logistics_details = request.form.get('dc_pickup_window', 'N/A')
+        elif logistics_choice == 'WWS (Pickup)':
+            logistics_details = request.form.get('wws_pickup_window', 'N/A')
         else:
             logistics_details = "N/A"
 
