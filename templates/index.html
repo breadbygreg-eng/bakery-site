@@ -347,7 +347,14 @@
                     </div>
 
                     <div id="schoolArea" style="display:none; margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.2);">
-                        <p><strong>Pickup Info:</strong> {{ details['WWS (Pickup) Info'] }}</p>
+                        <label>Select WWS Pickup Time:</label>
+                        <select name="wws_pickup_window">
+                            {% if details['wws_window_list'] %}
+                                {% for window in details['wws_window_list'] %}<option value="{{ window }}">{{ window }}</option>{% endfor %}
+                            {% else %}
+                                <option value="TBD">Time TBD</option>
+                            {% endif %}
+                        </select>
                     </div>
 
                     <label for="notes">Notes</label>
