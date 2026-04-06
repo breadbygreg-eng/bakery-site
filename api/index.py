@@ -380,17 +380,34 @@ def vip_submit():
     try:
         name = request.form.get('name')
         contact = request.form.get('contact').strip().lower()
-        order_summary = request.form.get('order_summary')
+        base_summary = request.form.get('order_summary')
         timestamp = datetime.now(ZoneInfo('America/New_York'))
         
         sheet = get_sheet()
+        
+        # --- VIP SIZE LOOKUP LOGIC ---
+        loaf_size = "Size Unknown"
+        try:
+            sub_sheet = sheet.worksheet("Bread Subscriptions")
+            sub_records = sub_sheet.get_all_records()
+            for row in sub_records:
+                if str(row.get('Email', '')).strip().lower() == contact:
+                    loaf_size = row.get('Size', 'Size Unknown')
+                    break
+        except Exception as e:
+            print(f"Subscription lookup error: {e}")
+            
+        # Append the found size to the item they chose
+        order_summary = f"{base_summary} [{loaf_size}]"
+        # ------------------------------
+
         settings = {}
         for i in sheet.worksheet("Settings").get_all_records():
             if i.get('Setting Name'):
                 settings[i['Setting Name']] = i['Value']
-                
+
         logistics_choice = request.form.get('logistics')
-            
+        
         if logistics_choice == 'Clarksburg Resident (Pickup)':
             logistics_details = request.form.get('pickup_window', 'N/A')
         elif logistics_choice == 'Washington, DC 29th St NW':
@@ -412,7 +429,7 @@ def vip_submit():
         return redirect(url_for('vip_success', name=name))
     except Exception as e:
         return f"Error: {e}"
-
+        
 @app.route('/success')
 def success():
     try:
