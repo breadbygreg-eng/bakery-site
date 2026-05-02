@@ -5,6 +5,13 @@
       "use": "@vercel/python"
     }
   ],
+  "redirects": [
+    {
+      "source": "/VIP",
+      "destination": "/vip",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/(.*)",
