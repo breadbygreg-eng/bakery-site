@@ -89,6 +89,7 @@ def send_bakery_email(subject, recipient, name=None, total="0.00"):
         data = {
             "sender": {"name": "Aiara Bakery", "email": "greg@aiarabakery.com"},
             "to": [{"email": recipient}],
+            "bcc": [{"email": "greg@aiarabakery.com"}],
             "subject": subject,
             "htmlContent": html_content
         }
@@ -138,6 +139,7 @@ def send_subscription_email(subject, recipient, name=None):
         data = {
             "sender": {"name": "Aiara Bakery", "email": "greg@aiarabakery.com"},
             "to": [{"email": recipient}],
+            "bcc": [{"email": "greg@aiarabakery.com"}],
             "subject": subject,
             "htmlContent": html_content
         }
@@ -187,6 +189,11 @@ def home():
 @app.route('/submit', methods=['POST'])
 def submit():
     try:
+        # --- HONEYPOT TRAP ---
+        if request.form.get('website_url'):
+            return redirect(url_for('home'))
+        # ---------------------
+
         name = request.form.get('name')
         contact = request.form.get('contact').strip().lower()
         order_summary = request.form.get('order_summary')
@@ -249,6 +256,11 @@ def submit():
 @app.route('/subscribe', methods=['POST'])
 def subscribe():
     try:
+        # --- HONEYPOT TRAP ---
+        if request.form.get('website_url'):
+            return redirect(url_for('home'))
+        # ---------------------
+
         email = request.form.get('email').strip().lower()
         if not email:
             return redirect(url_for('home'))
@@ -308,6 +320,7 @@ def send_vip_email(subject, recipient, name=None):
         data = {
             "sender": {"name": "Aiara Bakery", "email": "greg@aiarabakery.com"},
             "to": [{"email": recipient}],
+            "bcc": [{"email": "greg@aiarabakery.com"}],
             "subject": subject,
             "htmlContent": html_content
         }
@@ -378,6 +391,11 @@ def vip():
 @app.route('/vip-submit', methods=['POST'])
 def vip_submit():
     try:
+        # --- HONEYPOT TRAP ---
+        if request.form.get('website_url'):
+            return redirect(url_for('home'))
+        # ---------------------
+
         name = request.form.get('name')
         contact = request.form.get('contact').strip().lower()
         base_summary = request.form.get('order_summary')
