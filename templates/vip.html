@@ -58,6 +58,11 @@
         <div class="order-form">
             <h2 style="font-family: 'Playfair Display', serif; margin-top: 0; color: var(--primary-brown);">Pickup Details</h2>
             <form action="/vip-submit" method="POST" id="vipForm">
+
+                <div style="display:none;" aria-hidden="true">
+                    <label for="website_url">Leave this empty:</label>
+                    <input type="text" id="website_url" name="website_url" tabindex="-1" autocomplete="off">
+                </div>
                 <input type="hidden" name="order_summary" id="orderSummary">
                 
                 <label for="name">Name</label>
@@ -72,6 +77,7 @@
                     <option value="Clarksburg Resident (Pickup)">Clarksburg Resident (Pickup)</option>
                     <option value="Washington, DC 29th St NW">Washington, DC 29th St NW</option>
                     <option value="WWS (Pickup)">WWS (Pickup)</option>
+                    <option value="8001 Woodmont (Front desk delivery)">8001 Woodmont (Front desk delivery)</option>
                 </select>
 
                 <div id="pickupArea" style="display:none; margin-bottom: 20px;">
@@ -103,6 +109,17 @@
                     </select>
                 </div>
 
+                <div id="woodmontArea" style="display:none; margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.2);">
+                    <label>Select Woodmont Pickup Time:</label>
+                    <select name="woodmont_window">
+                        {% if details['woodmont_window_list'] %}
+                            {% for window in details['woodmont_window_list'] %}<option value="{{ window }}">{{ window }}</option>{% endfor %}
+                        {% else %}
+                            <option value="TBD">Time TBD</option>
+                        {% endif %}
+                    </select>
+                </div>
+
                 <label for="notes">Notes (Vacation holds, etc.)</label>
                 <textarea id="notes" name="notes" rows="2"></textarea>
                 
@@ -117,6 +134,7 @@
             document.getElementById('pickupArea').style.display = val === 'Clarksburg Resident (Pickup)' ? 'block' : 'none';
             document.getElementById('dcArea').style.display = val === 'Washington, DC 29th St NW' ? 'block' : 'none';
             document.getElementById('schoolArea').style.display = val === 'WWS (Pickup)' ? 'block' : 'none';
+            document.getElementById('woodmontArea').style.display = val === '8001 Woodmont (Front desk delivery)' ? 'block' : 'none';
         }
         document.getElementById('vipForm').onsubmit = function() {
             let summary = [];
