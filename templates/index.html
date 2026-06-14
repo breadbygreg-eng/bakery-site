@@ -294,6 +294,11 @@
             {% else %}
                 <h2 style="font-family: 'Playfair Display', serif; margin-top: 0;">Order Details</h2>
                 <form action="/submit" method="POST" id="orderForm">
+                    
+                    <div style="display:none;" aria-hidden="true">
+                        <label for="website_url">Leave this empty:</label>
+                        <input type="text" id="website_url" name="website_url" tabindex="-1" autocomplete="off">
+                    </div>
                     <input type="hidden" name="order_summary" id="orderSummary">
                     <input type="hidden" name="order_total" id="orderTotal">
                     
@@ -324,6 +329,7 @@
                             <option value="Clarksburg Resident (Pickup)">Clarksburg Resident (Pickup)</option>
                             <option value="Washington, DC 29th St NW">Washington, DC 29th St NW</option>
                             <option value="WWS (Pickup)">WWS (Pickup)</option>
+                            <option value="8001 Woodmont (Front desk delivery)">8001 Woodmont (Front desk delivery)</option>
                             <option value="Other (Please detail in Notes)">Other (Please detail in Notes)</option>
                         {% endif %}
                     </select>
@@ -357,6 +363,17 @@
                         </select>
                     </div>
 
+                    <div id="woodmontArea" style="display:none; margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.2);">
+                        <label>Select Woodmont Pickup Time:</label>
+                        <select name="woodmont_window">
+                            {% if details['woodmont_window_list'] %}
+                                {% for window in details['woodmont_window_list'] %}<option value="{{ window }}">{{ window }}</option>{% endfor %}
+                            {% else %}
+                                <option value="TBD">Time TBD</option>
+                            {% endif %}
+                        </select>
+                    </div>
+
                     <label for="notes">Notes</label>
                     <textarea id="notes" name="notes" rows="2"></textarea>
                     
@@ -370,6 +387,9 @@
             <p style="font-size: 0.9rem; max-width: 400px; margin: 0 auto 20px auto;">Join our list to get the menu delivered to your inbox every week so you don't miss the next bake.</p>
             
             <form action="/subscribe" method="POST" style="max-width: 400px; margin: 0 auto;">
+                <div style="display:none;" aria-hidden="true">
+                    <input type="text" name="website_url" tabindex="-1" autocomplete="off">
+                </div>
                 <input type="email" name="email" placeholder="Enter your email..." required 
                        style="margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white;">
                 <button type="submit" style="padding: 12px; background: transparent; color: white; border: 2px solid var(--accent-gold); font-size: 0.8rem;">Notify Me</button>
@@ -383,6 +403,7 @@
             document.getElementById('pickupArea').style.display = val === 'Clarksburg Resident (Pickup)' ? 'block' : 'none';
             document.getElementById('dcArea').style.display = val === 'Washington, DC 29th St NW' ? 'block' : 'none';
             document.getElementById('schoolArea').style.display = val === 'WWS (Pickup)' ? 'block' : 'none';
+            document.getElementById('woodmontArea').style.display = val === '8001 Woodmont (Front desk delivery)' ? 'block' : 'none';
         }
         document.getElementById('orderForm').onsubmit = function() {
             let summary = [];
