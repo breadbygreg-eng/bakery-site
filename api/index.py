@@ -9,6 +9,15 @@ from google.oauth2.service_account import Credentials
 
 app = Flask(__name__, template_folder='../templates')
 
+# --- LOGISTICS MAPPING ---
+# Add any future pickup locations to this dictionary
+LOGISTICS_MAP = {
+    'Clarksburg Resident (Pickup)': 'pickup_window',
+    'Washington, DC 29th St NW': 'dc_pickup_window',
+    'WWS (Pickup)': 'wws_pickup_window',
+    '8001 Woodmont (Front desk delivery)': 'woodmont_window'
+}
+
 def get_sheet():
     info = json.loads(os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON'))
     scope = ['https://www.googleapis.com/auth/spreadsheets']
@@ -34,7 +43,6 @@ def get_bake_settings():
         for fmt in formats:
             try:
                 bake_date_dt = datetime.strptime(bake_date_str, fmt)
-                # FIX: Make the spreadsheet date timezone-aware
                 bake_date_dt = bake_date_dt.replace(tzinfo=ZoneInfo('America/New_York'))
                 break
             except ValueError:
@@ -155,144 +163,6 @@ def send_subscription_email(subject, recipient, name=None):
     except Exception as e:
         print(f"Brevo Subscription API Error: {e}")
 
-@app.route('/')
-def home():
-    try:
-        sheet = get_sheet()
-        items = sheet.worksheet("Menu").get_all_records()
-        visible_items = [i for i in items if i.get('Status') == 'Active']
-        
-        settings = {}
-        for i in sheet.worksheet("Settings").get_all_records():
-            if i.get('Setting Name'):
-                settings[i['Setting Name']] = i['Value']
-        
-        if settings.get('Pickup Windows'):
-            settings['window_list'] = [w.strip() for w in settings['Pickup Windows'].split(',')]
-            
-        if settings.get('DC Pickup Windows'):
-            settings['dc_window_list'] = [w.strip() for w in settings['DC Pickup Windows'].split(',')]
-
-        if settings.get('WWS (Pickup) Info'):
-            settings['wws_window_list'] = [w.strip() for w in settings['WWS (Pickup) Info'].split(',')]
-            
-        return render_template('index.html', items=visible_items, details=settings)
-    except Exception as e:
-        return f"""
-            <div style="padding: 50px; font-family: sans-serif; text-align: center;">
-                <h2 style="color: #c53030;">Google Sheets Connection Error</h2>
-                <p>The website cannot read the spreadsheet. The exact error is:</p>
-                <code style="background: #eee; padding: 10px; display: inline-block; border-radius: 4px;">{e}</code>
-            </div>
-        """
-
-@app.route('/submit', methods=['POST'])
-def submit():
-    try:
-        # --- HONEYPOT TRAP ---
-        if request.form.get('website_url'):
-            return redirect(url_for('home'))
-        # ---------------------
-
-        name = request.form.get('name')
-        contact = request.form.get('contact').strip().lower()
-        order_summary = request.form.get('order_summary')
-        order_total = request.form.get('order_total', '0.00')
-        timestamp = datetime.now(ZoneInfo('America/New_York'))
-        
-        _, deadline_dt, deadline_text = get_bake_settings()
-        is_late = timestamp > deadline_dt
-
-        sheet = get_sheet()
-        
-        settings = {}
-        for i in sheet.worksheet("Settings").get_all_records():
-            if i.get('Setting Name'):
-                settings[i['Setting Name']] = i['Value']
-
-        logistics_choice = request.form.get('logistics')
-        
-        if logistics_choice == 'Clarksburg Resident (Pickup)':
-            logistics_details = request.form.get('pickup_window', 'N/A')
-        elif logistics_choice == 'Washington, DC 29th St NW':
-            logistics_details = request.form.get('dc_pickup_window', 'N/A')
-        elif logistics_choice == 'WWS (Pickup)':
-            logistics_details = request.form.get('wws_pickup_window', 'N/A')
-        else:
-            logistics_details = "N/A"
-
-        # Check if they opted into the subscription
-        is_subscribing = True if request.form.get('subscription') else False
-
-        sheet.worksheet("Orders").append_row([
-            timestamp.strftime("%m/%d/%Y %H:%M:%S"), name, contact, order_summary, 
-            request.form.get('logistics'), logistics_details,
-            "Yes" if is_subscribing else "No", request.form.get('notes'),
-            f"${order_total}", "Pending"
-        ], value_input_option='USER_ENTERED')
-
-        if request.form.get('join_list'):
-            sub_sheet = sheet.worksheet("Subscribers")
-            
-            try:
-                existing_emails = sub_sheet.col_values(2)
-            except Exception:
-                existing_emails = []
-                
-            if contact not in existing_emails:
-                sub_sheet.append_row([timestamp.strftime("%m/%d/%Y %H:%M:%S"), contact, 'Active'], value_input_option='USER_ENTERED')     
-                
-        # Send standard confirmation email
-        send_bakery_email("🍞 Aiara Bakery Order Received!", contact, name, order_total)
-        
-        # Send VIP welcome email if they checked the box
-        if is_subscribing:
-            send_subscription_email("🍞 Welcome to the Aiara Bakery VIP Roster!", contact, name)
-
-        return redirect(url_for('success', name=name, total=order_total, is_late=is_late))
-    except Exception as e:
-        return f"Error: {e}"
-        
-@app.route('/subscribe', methods=['POST'])
-def subscribe():
-    try:
-        # --- HONEYPOT TRAP ---
-        if request.form.get('website_url'):
-            return redirect(url_for('home'))
-        # ---------------------
-
-        email = request.form.get('email').strip().lower()
-        if not email:
-            return redirect(url_for('home'))
-
-        timestamp = datetime.now(ZoneInfo('America/New_York'))
-        sheet = get_sheet()
-        sub_sheet = sheet.worksheet("Subscribers")
-        
-        try:
-            existing_emails = sub_sheet.col_values(2)
-        except Exception:
-            existing_emails = []
-
-        if email not in existing_emails:
-            sub_sheet.append_row([
-                timestamp.strftime("%m/%d/%Y %H:%M:%S"), 
-                email, 
-                'Active'
-            ], value_input_option='USER_ENTERED')
-            
-        return render_template('subscribe_success.html', email=email)
-        
-    except Exception as e:
-        print(f"Subscribe Error: {e}")
-        return redirect(url_for('home'))
-
-@app.route('/unsubscribe', methods=['GET', 'POST'])
-def unsubscribe():
-    if request.method == 'POST':
-        return redirect(url_for('home'))
-    return render_template('unsubscribe.html')
-
 def send_vip_email(subject, recipient, name=None):
     try:
         html_content = f"""
@@ -336,6 +206,140 @@ def send_vip_email(subject, recipient, name=None):
     except Exception as e:
         print(f"Brevo VIP API Error: {e}")
 
+@app.route('/')
+def home():
+    try:
+        sheet = get_sheet()
+        items = sheet.worksheet("Menu").get_all_records()
+        visible_items = [i for i in items if i.get('Status') == 'Active']
+        
+        settings = {}
+        for i in sheet.worksheet("Settings").get_all_records():
+            if i.get('Setting Name'):
+                settings[i['Setting Name']] = i['Value']
+        
+        if settings.get('Pickup Windows'):
+            settings['window_list'] = [w.strip() for w in settings['Pickup Windows'].split(',')]
+            
+        if settings.get('DC Pickup Windows'):
+            settings['dc_window_list'] = [w.strip() for w in settings['DC Pickup Windows'].split(',')]
+
+        if settings.get('WWS (Pickup) Info'):
+            settings['wws_window_list'] = [w.strip() for w in settings['WWS (Pickup) Info'].split(',')]
+
+        if settings.get('8001 Woodmont (Front desk delivery)'):
+            settings['woodmont_window_list'] = [w.strip() for w in settings['8001 Woodmont (Front desk delivery)'].split(',')]
+        
+        return render_template('index.html', items=visible_items, details=settings)
+    except Exception as e:
+        return f"""
+            <div style="padding: 50px; font-family: sans-serif; text-align: center;">
+                <h2 style="color: #c53030;">Google Sheets Connection Error</h2>
+                <p>The website cannot read the spreadsheet. The exact error is:</p>
+                <code style="background: #eee; padding: 10px; display: inline-block; border-radius: 4px;">{e}</code>
+            </div>
+        """
+
+@app.route('/submit', methods=['POST'])
+def submit():
+    try:
+        # --- HONEYPOT TRAP ---
+        if request.form.get('website_url'):
+            return redirect(url_for('home'))
+        # ---------------------
+
+        name = request.form.get('name')
+        contact = request.form.get('contact').strip().lower()
+        order_summary = request.form.get('order_summary')
+        order_total = request.form.get('order_total', '0.00')
+        timestamp = datetime.now(ZoneInfo('America/New_York'))
+        
+        _, deadline_dt, deadline_text = get_bake_settings()
+        is_late = timestamp > deadline_dt
+
+        sheet = get_sheet()
+        
+        settings = {}
+        for i in sheet.worksheet("Settings").get_all_records():
+            if i.get('Setting Name'):
+                settings[i['Setting Name']] = i['Value']
+
+        logistics_choice = request.form.get('logistics')
+        field_key = LOGISTICS_MAP.get(logistics_choice)
+        logistics_details = request.form.get(field_key, 'N/A') if field_key else "N/A"
+
+        # Check if they opted into the subscription
+        is_subscribing = True if request.form.get('subscription') else False
+
+        sheet.worksheet("Orders").append_row([
+            timestamp.strftime("%m/%d/%Y %H:%M:%S"), name, contact, order_summary, 
+            logistics_choice, logistics_details,
+            "Yes" if is_subscribing else "No", request.form.get('notes'),
+            f"${order_total}", "Pending"
+        ], value_input_option='USER_ENTERED')
+
+        if request.form.get('join_list'):
+            sub_sheet = sheet.worksheet("Subscribers")
+            
+            try:
+                existing_emails = sub_sheet.col_values(2)
+            except Exception:
+                existing_emails = []
+                
+            if contact not in existing_emails:
+                sub_sheet.append_row([timestamp.strftime("%m/%d/%Y %H:%M:%S"), contact, 'Active'], value_input_option='USER_ENTERED')     
+                
+        # Send standard confirmation email
+        send_bakery_email("🍞 Aiara Bakery Order Received!", contact, name, order_total)
+        
+        # Send VIP welcome email if they checked the box
+        if is_subscribing:
+            send_subscription_email("🍞 Welcome to the Aiara Bakery VIP Roster!", contact, name)
+
+        return redirect(url_for('success', name=name, total=order_total, is_late=is_late))
+    except Exception as e:
+        return f"Error: {e}"
+
+@app.route('/subscribe', methods=['POST'])
+def subscribe():
+    try:
+        # --- HONEYPOT TRAP ---
+        if request.form.get('website_url'):
+            return redirect(url_for('home'))
+        # ---------------------
+
+        email = request.form.get('email').strip().lower()
+        if not email:
+            return redirect(url_for('home'))
+
+        timestamp = datetime.now(ZoneInfo('America/New_York'))
+        sheet = get_sheet()
+        sub_sheet = sheet.worksheet("Subscribers")
+        
+        try:
+            existing_emails = sub_sheet.col_values(2)
+        except Exception:
+            existing_emails = []
+
+        if email not in existing_emails:
+            sub_sheet.append_row([
+                timestamp.strftime("%m/%d/%Y %H:%M:%S"), 
+                email, 
+                'Active'
+            ], value_input_option='USER_ENTERED')
+            
+        return render_template('subscribe_success.html', email=email)
+        
+    except Exception as e:
+        print(f"Subscribe Error: {e}")
+        return redirect(url_for('home'))
+
+@app.route('/unsubscribe', methods=['GET', 'POST'])
+def unsubscribe():
+    if request.method == 'POST':
+        return redirect(url_for('home'))
+    return render_template('unsubscribe.html')
+
 @app.route('/early-access')
 def early_access():
     try:
@@ -358,6 +362,9 @@ def early_access():
 
         if settings.get('WWS (Pickup) Info'):
             settings['wws_window_list'] = [w.strip() for w in settings['WWS (Pickup) Info'].split(',')]
+
+        if settings.get('8001 Woodmont (Front desk delivery)'):
+            settings['woodmont_window_list'] = [w.strip() for w in settings['8001 Woodmont (Front desk delivery)'].split(',')]
             
         return render_template('index.html', items=visible_items, details=settings)
     except Exception as e:
@@ -383,6 +390,9 @@ def vip():
 
         if settings.get('WWS (Pickup) Info'):
             settings['wws_window_list'] = [w.strip() for w in settings['WWS (Pickup) Info'].split(',')]
+
+        if settings.get('8001 Woodmont (Front desk delivery)'):
+            settings['woodmont_window_list'] = [w.strip() for w in settings['8001 Woodmont (Front desk delivery)'].split(',')]
             
         return render_template('vip.html', items=visible_items, details=settings)
     except Exception as e:
@@ -425,19 +435,12 @@ def vip_submit():
                 settings[i['Setting Name']] = i['Value']
 
         logistics_choice = request.form.get('logistics')
-        
-        if logistics_choice == 'Clarksburg Resident (Pickup)':
-            logistics_details = request.form.get('pickup_window', 'N/A')
-        elif logistics_choice == 'Washington, DC 29th St NW':
-            logistics_details = request.form.get('dc_pickup_window', 'N/A')
-        elif logistics_choice == 'WWS (Pickup)':
-            logistics_details = request.form.get('wws_pickup_window', 'N/A')
-        else:
-            logistics_details = "N/A"
+        field_key = LOGISTICS_MAP.get(logistics_choice)
+        logistics_details = request.form.get(field_key, 'N/A') if field_key else "N/A"
 
         sheet.worksheet("Orders").append_row([
             timestamp.strftime("%m/%d/%Y %H:%M:%S"), name, contact, order_summary, 
-            request.form.get('logistics'), logistics_details,
+            logistics_choice, logistics_details,
             "Yes (VIP Roster)", request.form.get('notes'),
             "VIP Prepaid", "Paid"
         ], value_input_option='USER_ENTERED')
