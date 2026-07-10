@@ -124,10 +124,9 @@ def send_subscription_email(subject, recipient, name=None):
                         
                         <div style="background: #fdfaf5; padding: 20px; border-left: 4px solid #d4a373; margin: 25px 0;">
                             <h3 style="margin-top: 0; color: #5d4037;">How the Billing Works</h3>
-                            <p style="margin-bottom: 10px;">We keep things simple. Subscriptions are billed monthly based on your loaf size:</p>
+                            <p style="margin-bottom: 10px;">We keep things simple. Subscriptions are billed at a flat monthly rate:</p>
                             <ul style="margin-top: 0; padding-left: 20px;">
-                                <li><strong>Small Loaf (650g):</strong> $30 / month</li>
-                                <li><strong>Large Loaf (1kg):</strong> $40 / month</li>
+                                <li><strong>Any Loaf (Any Size or Style):</strong> $30 / month</li>
                             </ul>
                             <p style="margin-bottom: 0;"><strong>Next Steps:</strong> I will be sending over your first monthly payment request shortly via Venmo or email. Once that is settled, your spot is permanently locked in and the dough is as good as baked.</p>
                         </div>
