@@ -97,7 +97,7 @@ def send_bakery_email(subject, recipient, name=None, total="0.00"):
         data = {
             "sender": {"name": "Aiara Bakery", "email": "greg@aiarabakery.com"},
             "to": [{"email": recipient}],
-            "bcc": [{"email": "greg@aiarabakery.com"}],
+            "bcc": [{"email": "breadbygreg@gmail.com"}],
             "subject": subject,
             "htmlContent": html_content
         }
@@ -146,7 +146,7 @@ def send_subscription_email(subject, recipient, name=None):
         data = {
             "sender": {"name": "Aiara Bakery", "email": "greg@aiarabakery.com"},
             "to": [{"email": recipient}],
-            "bcc": [{"email": "greg@aiarabakery.com"}],
+            "bcc": [{"email": "breadbygreg@gmail.com"}],
             "subject": subject,
             "htmlContent": html_content
         }
@@ -189,7 +189,7 @@ def send_vip_email(subject, recipient, name=None):
         data = {
             "sender": {"name": "Aiara Bakery", "email": "greg@aiarabakery.com"},
             "to": [{"email": recipient}],
-            "bcc": [{"email": "greg@aiarabakery.com"}],
+            "bcc": [{"email": "breadbygreg@gmail.com"}],
             "subject": subject,
             "htmlContent": html_content
         }
