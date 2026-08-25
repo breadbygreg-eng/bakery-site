@@ -79,7 +79,7 @@ def send_bakery_email(subject, recipient, name=None, total="0.00"):
                             
                             <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 0 0 15px 0;">
                             <p style="margin: 0; font-size: 0.9em; color: #555;">
-                                <strong>No Venmo?</strong> We also accept Zelle. Please send your Zelle payment to <strong>breadbygreg@gmail.com</strong>. 
+                                <strong>No Venmo?</strong> We also accept Zelle. Please send your Zelle payment to <strong>greg@aiarabakery.com</strong>. 
                                 <br><span style="font-size: 0.85em; font-style: italic;">(Please note: Zelle payments route to personal banking, so the name may appear differently than Aiara Bakery).</span>
                             </p>
                         </div>                        
@@ -97,7 +97,7 @@ def send_bakery_email(subject, recipient, name=None, total="0.00"):
         data = {
             "sender": {"name": "Aiara Bakery", "email": "greg@aiarabakery.com"},
             "to": [{"email": recipient}],
-            "bcc": [{"email": "breadbygreg@gmail.com"}],
+            "bcc": [{"email": "greg@aiarabakery.com"}],
             "subject": subject,
             "htmlContent": html_content
         }
@@ -146,7 +146,7 @@ def send_subscription_email(subject, recipient, name=None):
         data = {
             "sender": {"name": "Aiara Bakery", "email": "greg@aiarabakery.com"},
             "to": [{"email": recipient}],
-            "bcc": [{"email": "breadbygreg@gmail.com"}],
+            "bcc": [{"email": "greg@aiarabakery.com"}],
             "subject": subject,
             "htmlContent": html_content
         }
@@ -189,7 +189,7 @@ def send_vip_email(subject, recipient, name=None):
         data = {
             "sender": {"name": "Aiara Bakery", "email": "greg@aiarabakery.com"},
             "to": [{"email": recipient}],
-            "bcc": [{"email": "breadbygreg@gmail.com"}],
+            "bcc": [{"email": "greg@aiarabakery.com"}],
             "subject": subject,
             "htmlContent": html_content
         }
