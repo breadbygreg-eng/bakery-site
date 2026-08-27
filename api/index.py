@@ -217,6 +217,13 @@ def home():
             if i.get('Setting Name'):
                 settings[i['Setting Name']] = i['Value']
         
+        # --- HARD CUTOFF LOGIC ---
+        # If the deadline has passed (and the store isn't fully closed), force Pre-Order mode
+        _, deadline_dt, _ = get_bake_settings()
+        if datetime.now(ZoneInfo('America/New_York')) > deadline_dt and settings.get('Store Status') != 'Closed':
+            settings['Store Status'] = 'Pre-Order'
+        # -------------------------
+        
         if settings.get('Pickup Windows'):
             settings['window_list'] = [w.strip() for w in settings['Pickup Windows'].split(',')]
             
@@ -228,7 +235,7 @@ def home():
 
         if settings.get('8001 Woodmont (Front desk delivery)'):
             settings['woodmont_window_list'] = [w.strip() for w in settings['8001 Woodmont (Front desk delivery)'].split(',')]
-        
+            
         return render_template('index.html', items=visible_items, details=settings)
     except Exception as e:
         return f"""
@@ -463,8 +470,8 @@ def success():
             if i.get('Setting Name'):
                 settings[i['Setting Name']] = i['Value']
 
-        _, _, deadline_text = get_bake_settings()
-        msg = f"Your order is in! (Note: It arrived after the {deadline_text} cutoff, so we will confirm your bake day shortly.)" if is_late else f"Thanks {name}, your order is confirmed for our next bake day!"
+        # Update the success message to definitively bump late orders to next week
+        msg = f"Your pre-order is in! Since the cutoff for this week has passed, your loaf is secured for NEXT week's bake. We will email you on Friday when the new pickup schedule drops." if is_late else f"Thanks {name}, your order is confirmed for our next bake day!"
 
         return render_template('success.html', name=name, message=msg, is_late=is_late, details=settings, total=total)
     except Exception as e:
