@@ -211,7 +211,7 @@ def home():
         sheet = get_sheet()
         items = sheet.worksheet("Menu").get_all_records()
         # Grabs Active items, but excludes any item explicitly marked 'No' in the VIP column
-        visible_items = [i for i in items if i.get('Status') == 'Active' and str(i.get('VIP', '')).strip().lower() != 'no']
+        visible_items = [i for i in items if i.get('Status') == 'Active' and str(i.get('VIP', '')).strip().lower() != 'No']
         
         settings = {}
         for i in sheet.worksheet("Settings").get_all_records():
