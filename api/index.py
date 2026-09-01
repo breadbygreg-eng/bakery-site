@@ -211,7 +211,7 @@ def home():
         sheet = get_sheet()
         items = sheet.worksheet("Menu").get_all_records()
         print("DEBUG MENU ITEMS:", items) # <--- ADD THIS LINE
-        visible_items = [i for i in items if i.get('Status') == 'Active' and str(i.get('VIP', '')).strip().lower() != 'no']
+        visible_items = [i for i in items if i.get('Status') == 'Active']
         
         settings = {}
         for i in sheet.worksheet("Settings").get_all_records():
@@ -382,7 +382,7 @@ def vip():
     try:
         sheet = get_sheet()
         items = sheet.worksheet("Menu").get_all_records()
-        visible_items = [i for i in items if i.get('Status') == 'Active']
+        visible_items = [i for i in items if i.get('Status') == 'Active' and str(i.get('VIP', '')).strip().lower() != 'no']
         
         settings = {}
         for i in sheet.worksheet("Settings").get_all_records():
