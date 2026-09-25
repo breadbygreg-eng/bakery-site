@@ -51,14 +51,14 @@ def get_bake_settings():
         if not bake_date_dt:
             bake_date_dt = datetime.now(ZoneInfo('America/New_York')) + timedelta(days=7)
 
-        deadline_dt = bake_date_dt - timedelta(days=1)
-        deadline_dt = deadline_dt.replace(hour=23, minute=59)
+        deadline_dt = bake_date_dt - timedelta(days=2)
+        deadline_dt = deadline_dt.replace(hour=20, minute=00)
         
-        return bake_date_dt, deadline_dt, deadline_dt.strftime("%A, %B %d at 11:59 PM")
+        return bake_date_dt, deadline_dt, f"{deadline_dt.strftime('%B')} {deadline_dt.day} at 8:00 PM"
     except Exception as e:
         print(f"Settings Error: {e}")
         future = datetime.now(ZoneInfo('America/New_York')) + timedelta(days=1)
-        return future, future, "the night before bake day"
+        return future, future, "2 days before bake day"
 
 def send_bakery_email(subject, recipient, name=None, total="0.00"):
     try:
@@ -220,7 +220,9 @@ def home():
         
         # --- HARD CUTOFF LOGIC ---
         # If the deadline has passed (and the store isn't fully closed), force Pre-Order mode
-        _, deadline_dt, _ = get_bake_settings()
+        bake_dt, deadline_dt, deadline_text = get_bake_settings()
+        settings['Formatted Bake Date'] = f"{bake_dt.strftime('%B')} {bake_dt.day}"
+        settings['Formatted Deadline'] = deadline_text
         if datetime.now(ZoneInfo('America/New_York')) > deadline_dt and settings.get('Store Status') != 'Closed':
             settings['Store Status'] = 'Pre-Order'
         # -------------------------
