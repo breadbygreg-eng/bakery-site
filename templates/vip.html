@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIP Portal | Aiara Bakery</title>
+    <!-- Brand Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:ital,wght@0,400;0,700;1,700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -59,9 +60,9 @@
             margin-top: 0; 
             border-bottom: 2px solid #eee;
             padding-bottom: 10px;
+            font-size: 1.5rem;
         }
 
-        /* Menu Item Styling */
         .item { 
             display: flex; 
             justify-content: space-between; 
@@ -72,18 +73,27 @@
 
         .item-details { flex-grow: 1; padding-right: 15px; }
 
+        /* Dropdown Fix: appearance: none + custom SVG arrow for breathing room */
         .qty-select {
             width: 75px; 
             height: 38px; 
-            padding: 0 5px; 
+            padding: 0 35px 0 10px; /* Right padding for the arrow */
             border: 1px solid #ddd; 
             border-radius: 4px; 
             font-weight: bold;
             font-family: 'Lato', sans-serif;
-            background: white;
+            background-color: white;
             cursor: pointer;
             box-sizing: border-box;
+            margin: 0;
             color: #333;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235d4037' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center; /* Arrow breathing room */
+            background-size: 16px;
         }
 
         .premium-tag { 
@@ -99,7 +109,6 @@
             text-transform: uppercase;
         }
 
-        /* Form Styling */
         .order-form { 
             background: var(--cream-bg); 
             color: #333; 
@@ -121,20 +130,22 @@
         }
 
         label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.85rem; color: var(--primary-brown); }
-        /* Updated styling for VIP dropdowns */
-        input, textarea { 
+        
+        input[type="text"], input[type="email"], textarea { 
             width: 100%; 
-            padding: 12px;
+            padding: 12px; 
             margin-bottom: 15px; 
             border: 1px solid #ccc; 
             border-radius: 4px; 
             box-sizing: border-box; 
             font-family: 'Lato', sans-serif;
+            font-size: 1rem;
         }
-        
-        select {
+
+        /* Logistics Dropdown Spacing Fix */
+        select[name="logistics"], .logistics-area select {
             width: 100%; 
-            padding: 12px 45px 12px 12px; /* Spaced for the custom arrow */
+            padding: 12px 45px 12px 12px;
             margin-bottom: 15px; 
             border: 1px solid #ccc; 
             border-radius: 4px; 
@@ -142,13 +153,9 @@
             font-family: 'Lato', sans-serif;
             background-color: white;
             cursor: pointer;
-            
-            /* Remove system arrow */
             appearance: none;
             -webkit-appearance: none;
             -moz-appearance: none;
-            
-            /* Add custom brand-colored arrow */
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235d4037' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
             background-repeat: no-repeat;
             background-position: right 15px center;
@@ -166,16 +173,15 @@
             letter-spacing: 1px;
             cursor: pointer; 
             font-family: 'Roboto Slab', serif; 
-            transition: 0.3s;
         }
-        button:hover { background: #4e342e; }
 
         .logistics-area {
-            background: rgba(0,0,0,0.03);
+            background: #fff;
             padding: 15px;
             border-radius: 4px;
             margin-bottom: 15px;
             display: none;
+            border: 1px solid #eee;
         }
     </style>
 </head>
@@ -192,7 +198,7 @@
         </div>
 
         <div class="menu-section">
-            <h2 style="margin-bottom: 15px;">Select Your Loaf</h2>
+            <h2>Select Your Loaf</h2>
             {% for item in items %}
             <div class="item">
                 <div class="item-details">
@@ -214,9 +220,8 @@
         </div>
 
         <div class="order-form">
-            <!-- Surcharge Reminder -->
             <div id="surcharge-notice">
-                <strong>Premium Selection Detected:</strong> You have selected the Multi-grain Sandwich Loaf. As a VIP, please Venmo the <strong>$4.00 upgrade fee</strong> to @aiarabakery to finalize this choice for this week.
+                <strong>Premium Selection Detected:</strong> You have selected the Multi-grain Sandwich Loaf. As a VIP, please Venmo the <strong>$4.00 upgrade fee</strong> to @aiarabakery to finalize this choice.
             </div>
 
             <form action="/vip-submit" method="POST" id="vipForm">
@@ -231,44 +236,33 @@
 
                 <label for="logistics">Pickup Location</label>
                 <select name="logistics" id="logistics" required onchange="toggleLogistics()">
-                    <option value="" disabled selected>Select an option...</option>
+                    <option value="" disabled selected>Select location...</option>
                     <option value="Clarksburg Resident (Pickup)">Clarksburg Resident (Pickup)</option>
                     <option value="Washington, DC 29th St NW">Washington, DC 29th St NW</option>
                     <option value="WWS (Pickup)">WWS (Pickup)</option>
                     <option value="8001 Woodmont (Front desk delivery)">8001 Woodmont (Front desk delivery)</option>
                 </select>
 
-                <!-- Logistics Windows -->
+                <!-- Logistics Area Windows -->
                 <div id="pickupArea" class="logistics-area">
-                    <label>Select Clarksburg Window:</label>
-                    <select name="pickup_window">
-                        {% for window in details['window_list'] %}<option value="{{ window }}">{{ window }}</option>{% endfor %}
-                    </select>
+                    <label>Clarksburg Window</label>
+                    <select name="pickup_window">{% for w in details['window_list'] %}<option value="{{ w }}">{{ w }}</option>{% endfor %}</select>
                 </div>
-
                 <div id="dcArea" class="logistics-area">
-                    <label>Select DC Window:</label>
-                    <select name="dc_pickup_window">
-                        {% for window in details['dc_window_list'] %}<option value="{{ window }}">{{ window }}</option>{% endfor %}
-                    </select>
+                    <label>DC Window</label>
+                    <select name="dc_pickup_window">{% for w in details['dc_window_list'] %}<option value="{{ w }}">{{ w }}</option>{% endfor %}</select>
                 </div>
-
                 <div id="schoolArea" class="logistics-area">
-                    <label>Select WWS Window:</label>
-                    <select name="wws_pickup_window">
-                        {% for window in details['wws_window_list'] %}<option value="{{ window }}">{{ window }}</option>{% endfor %}
-                    </select>
+                    <label>WWS Window</label>
+                    <select name="wws_pickup_window">{% for w in details['wws_window_list'] %}<option value="{{ w }}">{{ w }}</option>{% endfor %}</select>
                 </div>
-
                 <div id="woodmontArea" class="logistics-area">
-                    <label>Select Woodmont Window:</label>
-                    <select name="woodmont_window">
-                        {% for window in details['woodmont_window_list'] %}<option value="{{ window }}">{{ window }}</option>{% endfor %}
-                    </select>
+                    <label>Woodmont Window</label>
+                    <select name="woodmont_window">{% for w in details['woodmont_window_list'] %}<option value="{{ w }}">{{ w }}</option>{% endfor %}</select>
                 </div>
 
                 <label for="notes">Notes</label>
-                <textarea name="notes" id="notes" rows="2" placeholder="Vacation holds, special requests, etc."></textarea>
+                <textarea name="notes" id="notes" rows="2" placeholder="Vacation holds, etc."></textarea>
                 
                 <button type="submit" id="submitBtn">Lock in my Loaf</button>
             </form>
@@ -279,7 +273,6 @@
         const qtySelects = document.querySelectorAll('.qty-select');
         const notice = document.getElementById('surcharge-notice');
 
-        // Monitor for Multi-grain selection
         qtySelects.forEach(select => {
             select.addEventListener('change', () => {
                 let showNotice = false;
@@ -292,22 +285,18 @@
             });
         });
 
-        // Toggle Logistics Divs
         function toggleLogistics() {
             const val = document.getElementById('logistics').value;
             document.querySelectorAll('.logistics-area').forEach(el => el.style.display = 'none');
-            
             if (val === 'Clarksburg Resident (Pickup)') document.getElementById('pickupArea').style.display = 'block';
             if (val === 'Washington, DC 29th St NW') document.getElementById('dcArea').style.display = 'block';
             if (val === 'WWS (Pickup)') document.getElementById('schoolArea').style.display = 'block';
             if (val === '8001 Woodmont (Front desk delivery)') document.getElementById('woodmontArea').style.display = 'block';
         }
 
-        // Form Submission Logic
         document.getElementById('vipForm').onsubmit = function() {
             let summary = [];
             let hasPremium = false;
-            
             qtySelects.forEach(s => {
                 let qty = parseInt(s.value);
                 if (qty > 0) {
@@ -315,13 +304,8 @@
                     if (s.getAttribute('data-name').includes('Multi-grain')) hasPremium = true;
                 }
             });
-
             if (summary.length === 0) { alert("Please select at least one loaf!"); return false; }
-            
-            if (hasPremium) {
-                if (!confirm("You've selected the Multi-grain Sandwich Loaf. Please remember to Venmo the $4 surcharge to @aiarabakery. Proceed?")) return false;
-            }
-
+            if (hasPremium && !confirm("Premium Loaf selected. Please Venmo the $4 surcharge to @aiarabakery. Continue?")) return false;
             document.getElementById('orderSummary').value = summary.join(", ");
             document.getElementById('submitBtn').disabled = true;
             document.getElementById('submitBtn').innerText = "Processing...";
