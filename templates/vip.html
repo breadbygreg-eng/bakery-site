@@ -4,31 +4,155 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIP Portal | Aiara Bakery</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:ital,wght@0,400;0,700;1,700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --primary-brown: #5d4037; --accent-gold: #d4a373; --premium-color: #c53030; }
-        body { margin: 0; padding: 0; font-family: 'Lato', sans-serif; background: radial-gradient(circle at center, #2e241c 0%, #120e0c 100%); color: white; min-height: 100vh; }
-        .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
-        header { text-align: center; margin-bottom: 30px; }
-        header h1 { font-family: 'Roboto Slab', serif; font-size: 3rem; color: var(--accent-gold); font-style: italic; }
+        :root { 
+            --primary-brown: #5d4037; 
+            --accent-gold: #d4a373; 
+            --premium-color: #c53030; 
+            --cream-bg: #fdfaf5;
+        }
         
-        .bake-info { background: white; color: #333; padding: 15px; text-align: center; border-radius: 2px; margin-bottom: 25px; border-bottom: 4px solid var(--accent-gold); }
-        .menu-section { background: white; color: #333; padding: 30px; border-radius: 2px; margin-bottom: 20px; }
-        
-        .item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #eee; }
-        
-        /* Premium Highlight */
-        .premium-tag { 
-            display: inline-block; background: #fff5f5; color: var(--premium-color); 
-            font-size: 0.75rem; font-weight: bold; padding: 2px 6px; border: 1px solid #feb2b2; border-radius: 3px; margin-top: 5px;
+        body { 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Lato', sans-serif; 
+            background: radial-gradient(circle at center, #2e241c 0%, #120e0c 100%); 
+            color: white; 
+            min-height: 100vh; 
         }
 
-        .order-form { background: #fdfaf5; color: #333; padding: 35px; border-radius: 2px; }
-        input, select, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { width: 100%; padding: 20px; background: var(--primary-brown); color: white; border: none; font-weight: bold; text-transform: uppercase; cursor: pointer; font-family: 'Roboto Slab', serif; }
+        .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
         
+        header { text-align: center; margin-bottom: 30px; }
+        header h1 { 
+            font-family: 'Roboto Slab', serif; 
+            font-size: 3rem; 
+            color: var(--accent-gold); 
+            font-style: italic; 
+            margin-bottom: 5px;
+        }
+
+        .bake-info { 
+            background: white; 
+            color: #333; 
+            padding: 15px; 
+            text-align: center; 
+            border-radius: 2px; 
+            margin-bottom: 25px; 
+            border-bottom: 4px solid var(--accent-gold); 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .menu-section { 
+            background: white; 
+            color: #333; 
+            padding: 30px; 
+            border-radius: 2px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        h2 { 
+            font-family: 'Roboto Slab', serif; 
+            color: var(--primary-brown); 
+            margin-top: 0; 
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        /* Menu Item Styling */
+        .item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 15px 0; 
+            border-bottom: 1px solid #f0f0f0; 
+        }
+
+        .item-details { flex-grow: 1; padding-right: 15px; }
+
+        .qty-select {
+            width: 75px; 
+            height: 38px; 
+            padding: 0 5px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            font-weight: bold;
+            font-family: 'Lato', sans-serif;
+            background: white;
+            cursor: pointer;
+            box-sizing: border-box;
+            color: #333;
+        }
+
+        .premium-tag { 
+            display: inline-block; 
+            background: #fff5f5; 
+            color: var(--premium-color); 
+            font-size: 0.7rem; 
+            font-weight: bold; 
+            padding: 2px 6px; 
+            border: 1px solid #feb2b2; 
+            border-radius: 3px; 
+            margin-top: 5px;
+            text-transform: uppercase;
+        }
+
+        /* Form Styling */
+        .order-form { 
+            background: var(--cream-bg); 
+            color: #333; 
+            padding: 35px; 
+            border-radius: 2px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
         #surcharge-notice { 
-            display: none; background: #fff5f5; border: 1px solid #feb2b2; padding: 15px; border-radius: 4px; color: var(--premium-color); margin-bottom: 20px; font-size: 0.9rem; 
+            display: none; 
+            background: #fff5f5; 
+            border: 1px solid #feb2b2; 
+            padding: 15px; 
+            border-radius: 4px; 
+            color: var(--premium-color); 
+            margin-bottom: 20px; 
+            font-size: 0.9rem; 
+            line-height: 1.4;
+        }
+
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.85rem; color: var(--primary-brown); }
+        input, select, textarea { 
+            width: 100%; 
+            padding: 12px; 
+            margin-bottom: 15px; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+            box-sizing: border-box; 
+            font-family: 'Lato', sans-serif;
+            font-size: 1rem;
+        }
+
+        button { 
+            width: 100%; 
+            padding: 20px; 
+            background: var(--primary-brown); 
+            color: white; 
+            border: none; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+            cursor: pointer; 
+            font-family: 'Roboto Slab', serif; 
+            transition: 0.3s;
+        }
+        button:hover { background: #4e342e; }
+
+        .logistics-area {
+            background: rgba(0,0,0,0.03);
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            display: none;
         }
     </style>
 </head>
@@ -40,23 +164,23 @@
         </header>
 
         <div class="bake-info">
-            <small style="text-transform: uppercase; color: #888;">Upcoming Bake:</small><br>
-            <strong style="font-size: 1.2rem; font-family: 'Roboto Slab';">{{ details['Next Bake Date'] }}</strong>
+            <small style="text-transform: uppercase; color: #888; font-weight: bold;">Upcoming Bake:</small><br>
+            <strong style="font-size: 1.3rem; font-family: 'Roboto Slab'; color: #222;">{{ details['Next Bake Date'] }}</strong>
         </div>
 
         <div class="menu-section">
-            <h2 style="font-family: 'Roboto Slab'; color: var(--primary-brown); margin-top: 0;">Select Your Loaf</h2>
+            <h2 style="margin-bottom: 15px;">Select Your Loaf</h2>
             {% for item in items %}
             <div class="item">
-                <div style="flex-grow: 1; padding-right: 15px;">
-                    <strong style="font-size: 1.05rem;">{{ item['Item Name'] }}</strong><br>
+                <div class="item-details">
+                    <strong style="font-size: 1.1rem;">{{ item['Item Name'] }}</strong><br>
                     <small style="color: #666; font-style: italic;">{{ item['Description'] }}</small>
                     {% if "Multi-grain" in item['Item Name'] %}
-                        <br><span class="premium-tag">+$4.00 PREMIUM UPCHARGE</span>
+                        <br><span class="premium-tag">+$4.00 Premium Upgrade</span>
                     {% endif %}
                 </div>
                 <div>
-                    <select class="qty-select" data-name="{{ item['Item Name'] }}" style="width: 70px; padding: 6px; border-radius: 4px; border: 1px solid #ddd; font-weight: bold;">
+                    <select class="qty-select" data-name="{{ item['Item Name'] }}">
                         <option value="0">0</option>
                         <option value="1">1</option>
                         <option value="2">2</option>
@@ -67,42 +191,72 @@
         </div>
 
         <div class="order-form">
-            <!-- Surcharge Reminder (Controlled by JS) -->
+            <!-- Surcharge Reminder -->
             <div id="surcharge-notice">
-                <strong>Premium Selection Detected:</strong> You have selected the Multi-grain Sandwich Loaf. As a VIP, please Venmo the <strong>$4.00 upgrade fee</strong> to @aiarabakery to finalize this choice.
+                <strong>Premium Selection Detected:</strong> You have selected the Multi-grain Sandwich Loaf. As a VIP, please Venmo the <strong>$4.00 upgrade fee</strong> to @aiarabakery to finalize this choice for this week.
             </div>
 
             <form action="/vip-submit" method="POST" id="vipForm">
                 <div style="display:none;" aria-hidden="true"><input type="text" name="website_url" tabindex="-1"></div>
                 <input type="hidden" name="order_summary" id="orderSummary">
                 
-                <input type="text" name="name" required placeholder="Name">
-                <input type="email" name="contact" required placeholder="Email (Associated with your subscription)">
+                <label for="name">Name</label>
+                <input type="text" name="name" id="name" required placeholder="Full Name">
 
+                <label for="contact">Email</label>
+                <input type="email" name="contact" id="contact" required placeholder="Email associated with subscription">
+
+                <label for="logistics">Pickup Location</label>
                 <select name="logistics" id="logistics" required onchange="toggleLogistics()">
-                    <option value="" disabled selected>Select Pickup Location...</option>
+                    <option value="" disabled selected>Select an option...</option>
                     <option value="Clarksburg Resident (Pickup)">Clarksburg Resident (Pickup)</option>
                     <option value="Washington, DC 29th St NW">Washington, DC 29th St NW</option>
                     <option value="WWS (Pickup)">WWS (Pickup)</option>
                     <option value="8001 Woodmont (Front desk delivery)">8001 Woodmont (Front desk delivery)</option>
                 </select>
 
-                <div id="pickupArea" style="display:none; margin-bottom: 20px;">
-                    <label style="font-weight: bold; font-size: 0.8rem;">Clarksburg Window</label>
-                    <select name="pickup_window">{% for w in details['window_list'] %}<option value="{{ w }}">{{ w }}</option>{% endfor %}</select>
+                <!-- Logistics Windows -->
+                <div id="pickupArea" class="logistics-area">
+                    <label>Select Clarksburg Window:</label>
+                    <select name="pickup_window">
+                        {% for window in details['window_list'] %}<option value="{{ window }}">{{ window }}</option>{% endfor %}
+                    </select>
                 </div>
 
-                <textarea name="notes" rows="2" placeholder="Notes (Vacation holds, etc.)"></textarea>
+                <div id="dcArea" class="logistics-area">
+                    <label>Select DC Window:</label>
+                    <select name="dc_pickup_window">
+                        {% for window in details['dc_window_list'] %}<option value="{{ window }}">{{ window }}</option>{% endfor %}
+                    </select>
+                </div>
+
+                <div id="schoolArea" class="logistics-area">
+                    <label>Select WWS Window:</label>
+                    <select name="wws_pickup_window">
+                        {% for window in details['wws_window_list'] %}<option value="{{ window }}">{{ window }}</option>{% endfor %}
+                    </select>
+                </div>
+
+                <div id="woodmontArea" class="logistics-area">
+                    <label>Select Woodmont Window:</label>
+                    <select name="woodmont_window">
+                        {% for window in details['woodmont_window_list'] %}<option value="{{ window }}">{{ window }}</option>{% endfor %}
+                    </select>
+                </div>
+
+                <label for="notes">Notes</label>
+                <textarea name="notes" id="notes" rows="2" placeholder="Vacation holds, special requests, etc."></textarea>
+                
                 <button type="submit" id="submitBtn">Lock in my Loaf</button>
             </form>
         </div>
     </div>
 
     <script>
-        // Check for Premium Selection to show/hide notice
         const qtySelects = document.querySelectorAll('.qty-select');
         const notice = document.getElementById('surcharge-notice');
 
+        // Monitor for Multi-grain selection
         qtySelects.forEach(select => {
             select.addEventListener('change', () => {
                 let showNotice = false;
@@ -115,11 +269,18 @@
             });
         });
 
+        // Toggle Logistics Divs
         function toggleLogistics() {
             const val = document.getElementById('logistics').value;
-            document.getElementById('pickupArea').style.display = val === 'Clarksburg Resident (Pickup)' ? 'block' : 'none';
+            document.querySelectorAll('.logistics-area').forEach(el => el.style.display = 'none');
+            
+            if (val === 'Clarksburg Resident (Pickup)') document.getElementById('pickupArea').style.display = 'block';
+            if (val === 'Washington, DC 29th St NW') document.getElementById('dcArea').style.display = 'block';
+            if (val === 'WWS (Pickup)') document.getElementById('schoolArea').style.display = 'block';
+            if (val === '8001 Woodmont (Front desk delivery)') document.getElementById('woodmontArea').style.display = 'block';
         }
 
+        // Form Submission Logic
         document.getElementById('vipForm').onsubmit = function() {
             let summary = [];
             let hasPremium = false;
@@ -132,10 +293,10 @@
                 }
             });
 
-            if (summary.length === 0) { alert("Please select a loaf!"); return false; }
+            if (summary.length === 0) { alert("Please select at least one loaf!"); return false; }
             
             if (hasPremium) {
-                if (!confirm("You've selected a Premium Loaf. Please remember to Venmo the $4 surcharge to @aiarabakery. Continue?")) return false;
+                if (!confirm("You've selected the Multi-grain Sandwich Loaf. Please remember to Venmo the $4 surcharge to @aiarabakery. Proceed?")) return false;
             }
 
             document.getElementById('orderSummary').value = summary.join(", ");
