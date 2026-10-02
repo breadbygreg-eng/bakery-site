@@ -303,7 +303,34 @@ def early_access(): # (Logic omitted for brevity but keeping route active)
     return redirect(url_for('home'))
 
 @app.route('/vip')
-def vip(): # (Logic similar to home, renders vip.html)
-    return render_template('vip.html', items=[], details={})
+def vip():
+    try:
+        sheet = get_sheet()
+        # Fetch Menu Items
+        items = sheet.worksheet("Menu").get_all_records()
+        # Filter for Active items that are NOT marked 'No' in the VIP column
+        visible_items = [i for i in items if i.get('Status') == 'Active' and str(i.get('VIP', '')).strip().lower() != 'no']
+        
+        # Fetch Settings
+        settings = {i['Setting Name']: i['Value'] for i in sheet.worksheet("Settings").get_all_records() if i.get('Setting Name')}
+        
+        # Calculate Dates for the Banner
+        bake_dt, deadline_dt, deadline_text = get_bake_settings()
+        settings['Next Bake Date'] = f"{bake_dt.strftime('%B')} {bake_dt.day}"
+        
+        # Setup Logistics Windows for the dropdowns
+        for key, set_key in [
+            ('window_list', 'Pickup Windows'), 
+            ('dc_window_list', 'DC Pickup Windows'), 
+            ('wws_window_list', 'WWS (Pickup) Info'), 
+            ('woodmont_window_list', '8001 Woodmont (Front desk delivery)')
+        ]:
+            if settings.get(set_key):
+                settings[key] = [w.strip() for w in settings[set_key].split(',')]
+            
+        return render_template('vip.html', items=visible_items, details=settings)
+    except Exception as e:
+        print(f"VIP Portal Error: {e}")
+        return f"Error loading VIP Portal: {e}"
 
 index = app
