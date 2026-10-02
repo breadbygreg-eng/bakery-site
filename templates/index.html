@@ -252,12 +252,13 @@
 
                     <div style="margin: 20px 0; padding: 15px; border: 1px solid var(--accent-gold); background: #fff;">
                         <label style="display: flex; align-items: center; cursor: pointer; margin: 0;">
-                            <input type="checkbox" name="subscription" value="yes" style="width: 18px; height: 18px; margin-right: 10px;">
-                            <span style="font-weight: bold; color: var(--primary-brown);">Make this a Monthly Subscription</span>
+                            <!-- Added margin: 0 to the style below -->
+                            <input type="checkbox" name="subscription" value="yes" style="width: 18px; height: 18px; margin: 0 10px 0 0; cursor: pointer;">
+                            <span style="font-weight: bold; color: var(--primary-brown); line-height: 1;">Make this a Monthly Subscription</span>
                             <a href="#" onclick="openSubModal(event)" style="margin-left: auto; font-size: 0.8rem; color: #007bff;">What's this?</a>
                         </label>
                     </div>
-
+                    
                     <select name="logistics" id="logistics" required onchange="toggleLogistics()">
                         <option value="" disabled selected>Select Pickup Location...</option>
                         <option value="Clarksburg Resident (Pickup)">Clarksburg Resident (Pickup)</option>
