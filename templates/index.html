@@ -33,7 +33,6 @@
             font-style: italic;
         }
 
-        /* Condensed Two-Line Bake Info */
         .bake-info {
             background: rgba(255, 255, 255, 0.98);
             color: #333; 
@@ -100,6 +99,7 @@
         .faq-item.active .faq-question::after { transform: rotate(45deg); }
         .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; font-size: 0.95rem; color: #444; }
 
+        /* Menu Styling & Alignment Fix */
         .item { 
             display: flex; 
             justify-content: space-between; 
@@ -108,10 +108,35 @@
             border-bottom: 1px solid #f0f0f0;
         }
 
-        .price-tag { font-weight: bold; color: var(--primary-brown); }
+        .item-details { flex-grow: 1; padding-right: 15px; }
+
+        .item-actions {
+            display: flex;
+            align-items: center; /* Vertical alignment for price and select */
+            justify-content: flex-end;
+            min-width: 140px;
+        }
+
+        .price-tag { 
+            font-weight: bold; 
+            color: var(--primary-brown); 
+            margin: 0 15px 0 0; 
+            font-size: 1.1rem;
+            line-height: 1; /* Normalize height to aid centering */
+        }
 
         .qty-select {
-            width: 70px; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-weight: bold;
+            width: 75px; 
+            height: 38px; /* Fixed height for consistent centering */
+            padding: 0 5px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            font-weight: bold;
+            font-family: 'Lato', sans-serif;
+            background: white;
+            cursor: pointer;
+            box-sizing: border-box;
+            margin: 0;
         }
 
         .order-form { 
@@ -161,15 +186,15 @@
             <h2>About the Bakery</h2>
             <div class="faq-item">
                 <div class="faq-question">Our Bread & Sizing</div>
-                <div class="faq-answer"><div style="padding-bottom: 20px;">Standard artisan format (650g) and family format (1kg). Locally grown, freshly milled organic grains.</div></div>
+                <div class="faq-answer"><div style="padding: 0 0 20px 0;">Standard artisan format (650g) and family format (1kg). Locally grown, freshly milled organic grains.</div></div>
             </div>
             <div class="faq-item">
                 <div class="faq-question">How Ordering Works</div>
-                <div class="faq-answer"><div style="padding-bottom: 20px;">Micro-bakery cycle: Menu drops Friday, pre-orders close Thursday at 8PM, pickup on baking day.</div></div>
+                <div class="faq-answer"><div style="padding: 0 0 20px 0;">Micro-bakery cycle: Menu drops Friday, pre-orders close Thursday at 8PM, pickup on baking day.</div></div>
             </div>
             <div class="faq-item">
                 <div class="faq-question">The Monthly Subscription</div>
-                <div class="faq-answer"><div style="padding-bottom: 20px;">$30/mo small, $40/mo large. Guaranteed loaf every week without needing to fight the rush.</div></div>
+                <div class="faq-answer"><div style="padding: 0 0 20px 0;">$30/mo small, $40/mo large. Guaranteed loaf every week without needing to fight the rush.</div></div>
             </div>
         </div>
 
@@ -177,12 +202,12 @@
             <h2>This Week's Menu</h2>
             {% for item in items %}
             <div class="item">
-                <div style="flex-grow: 1; padding-right: 15px;">
+                <div class="item-details">
                     <strong style="font-size: 1.05rem;">{{ item['Item Name'] }}</strong><br>
                     <small style="color: #666; font-style: italic;">{{ item['Description'] }}</small>
                 </div>
-                <div style="display: flex; align-items: center; min-width: 120px; justify-content: flex-end;">
-                    <span class="price-tag" style="margin-right: 10px;">${{ item['Price'] }}</span>
+                <div class="item-actions">
+                    <span class="price-tag">${{ item['Price'] }}</span>
                     {% if item['Remaining']|int > 0 %}
                         <select class="qty-select" data-name="{{ item['Item Name'] }}" data-price="{{ item['Price'] }}">
                             <option value="0">0</option>
@@ -213,7 +238,7 @@
                     <input type="email" name="contact" required placeholder="Email">
 
                     <div style="margin: 20px 0; padding: 15px; border: 1px solid var(--accent-gold); background: #fff;">
-                        <label style="display: flex; align-items: center; cursor: pointer;">
+                        <label style="display: flex; align-items: center; cursor: pointer; margin: 0;">
                             <input type="checkbox" name="subscription" value="yes" style="width: 18px; height: 18px; margin-right: 10px;">
                             <span style="font-weight: bold; color: var(--primary-brown);">Make this a Monthly Subscription</span>
                             <a href="#" onclick="openSubModal(event)" style="margin-left: auto; font-size: 0.8rem; color: #007bff;">What's this?</a>
@@ -228,22 +253,22 @@
                         <option value="8001 Woodmont (Front desk delivery)">8001 Woodmont (Front desk delivery)</option>
                     </select>
 
-                    <div id="pickupArea" class="logistics-info" style="display:none; margin-bottom: 15px;">
+                    <div id="pickupArea" style="display:none; margin-bottom: 15px;">
                         <label>Clarksburg Window</label>
                         <select name="pickup_window">{% for w in details['window_list'] %}<option value="{{ w }}">{{ w }}</option>{% endfor %}</select>
                     </div>
 
-                    <div id="dcArea" class="logistics-info" style="display:none; margin-bottom: 15px;">
+                    <div id="dcArea" style="display:none; margin-bottom: 15px;">
                         <label>DC Window</label>
                         <select name="dc_pickup_window">{% for w in details['dc_window_list'] %}<option value="{{ w }}">{{ w }}</option>{% endfor %}</select>
                     </div>
 
-                    <div id="schoolArea" class="logistics-info" style="display:none; margin-bottom: 15px;">
+                    <div id="schoolArea" style="display:none; margin-bottom: 15px;">
                         <label>WWS Window</label>
                         <select name="wws_pickup_window">{% for w in details['wws_window_list'] %}<option value="{{ w }}">{{ w }}</option>{% endfor %}</select>
                     </div>
 
-                    <div id="woodmontArea" class="logistics-info" style="display:none; margin-bottom: 15px;">
+                    <div id="woodmontArea" style="display:none; margin-bottom: 15px;">
                         <label>Woodmont Window</label>
                         <select name="woodmont_window">{% for w in details['woodmont_window_list'] %}<option value="{{ w }}">{{ w }}</option>{% endfor %}</select>
                     </div>
@@ -266,7 +291,7 @@
     <div id="subModal" class="modal">
         <div style="background: white; padding: 30px; border-radius: 4px; max-width: 400px; color: #333; position: relative;">
             <h3 style="font-family: 'Roboto Slab'; color: var(--primary-brown);">Weekly Subscription</h3>
-            <p>Guaranteed fresh bread every week. Billed monthly ($30/mo). Check the box and we will email you the setup details!</p>
+            <p>Guaranteed fresh bread every week. Billed monthly. Check the box and we will email you the setup details!</p>
             <button onclick="closeSubModal()" style="padding: 10px;">Got it</button>
         </div>
     </div>
