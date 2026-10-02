@@ -60,12 +60,11 @@ def send_bakery_email(recipient, name=None, total="0.00", is_late=False):
         _, _, deadline_text = get_bake_settings()
         unsubscribe_url = f"https://aiarabakery.com/unsubscribe?email={recipient}"
         
-        # Branching Content for Late vs On-Time
         if is_late:
             subject = "🍞 Pre-Order Received (Next Week's Bake)"
             status_alert = f"""
-                <div style="background: #fff5f5; border: 1px solid #feb2b2; padding: 15px; margin-bottom: 20px; color: #9b2c2c;">
-                    <strong>Note:</strong> Since the cutoff for this week has passed, your loaf is secured for <strong>NEXT week's bake.</strong>
+                <div style="background: #fff5f5; border: 1px solid #feb2b2; padding: 15px; margin-bottom: 20px; color: #9b2c2c; border-radius: 4px;">
+                    <strong>Notice:</strong> Since the cutoff for this week has passed, your loaf is secured for <strong>NEXT week's bake.</strong> We will email you the pickup windows on Friday.
                 </div>
             """
         else:
@@ -83,7 +82,12 @@ def send_bakery_email(recipient, name=None, total="0.00", is_late=False):
                             <h3 style="margin-top: 0; color: #333;">Payment Instructions</h3>
                             <p>Your total for this bake is <strong>${total}</strong>. To finalize your order, please send your payment via Venmo to <strong>@aiarabakery</strong>.</p>
                             <a href="https://venmo.com/aiarabakery" style="display: inline-block; background: #008CFF; color: white; padding: 12px 25px; text-decoration: none; border-radius: 4px; font-weight: bold; margin-top: 10px; margin-bottom: 20px;">Pay ${total} with Venmo</a>
-                            <p style="margin: 0; font-size: 0.9em; color: #555;">No Venmo? Zelle: <strong>greg@aiarabakery.com</strong></p>
+                            
+                            <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 0 0 15px 0;">
+                            <p style="margin: 0; font-size: 0.9em; color: #555;">
+                                <strong>No Venmo?</strong> We also accept Zelle. Please send your payment to <strong>greg@aiarabakery.com</strong>. 
+                                <br><span style="font-size: 0.85em; font-style: italic;">(Note: Zelle routes to personal banking; the name may appear as Greg Willits).</span>
+                            </p>
                         </div>                        
                         <p>Orders for the upcoming bake close on <strong>{deadline_text}</strong>.</p>
                         <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
@@ -166,14 +170,12 @@ def home():
         settings['Formatted Bake Date'] = f"{bake_dt.strftime('%B')} {bake_dt.day}"
         settings['Formatted Deadline'] = deadline_text
         
-        # UI ALERT: Closing Soon (Within 6 hours of deadline)
         time_until_deadline = deadline_dt - now_ny
         settings['is_closing_soon'] = timedelta(hours=0) < time_until_deadline <= timedelta(hours=6)
 
         if now_ny > deadline_dt and settings.get('Store Status') != 'Closed':
             settings['Store Status'] = 'Pre-Order'
         
-        # Logistics windows
         for key, set_key in [('window_list', 'Pickup Windows'), ('dc_window_list', 'DC Pickup Windows'), 
                              ('wws_window_list', 'WWS (Pickup) Info'), ('woodmont_window_list', '8001 Woodmont (Front desk delivery)')]:
             if settings.get(set_key): settings[key] = [w.strip() for w in settings[set_key].split(',')]
@@ -181,6 +183,27 @@ def home():
         return render_template('index.html', items=visible_items, details=settings)
     except Exception as e:
         return f"Sheets Connection Error: {e}"
+
+@app.route('/early-access')
+def early_access():
+    try:
+        sheet = get_sheet()
+        items = sheet.worksheet("Menu").get_all_records()
+        visible_items = [i for i in items if i.get('Status') == 'Active']
+        settings = {i['Setting Name']: i['Value'] for i in sheet.worksheet("Settings").get_all_records() if i.get('Setting Name')}
+        
+        bake_dt, deadline_dt, deadline_text = get_bake_settings()
+        settings['Formatted Bake Date'] = f"{bake_dt.strftime('%B')} {bake_dt.day}"
+        settings['Formatted Deadline'] = deadline_text
+        settings['Store Status'] = 'Open' # Override for early access
+        
+        for key, set_key in [('window_list', 'Pickup Windows'), ('dc_window_list', 'DC Pickup Windows'), 
+                             ('wws_window_list', 'WWS (Pickup) Info'), ('woodmont_window_list', '8001 Woodmont (Front desk delivery)')]:
+            if settings.get(set_key): settings[key] = [w.strip() for w in settings[set_key].split(',')]
+            
+        return render_template('index.html', items=visible_items, details=settings)
+    except Exception as e:
+        return f"Early Access Error: {e}"
 
 @app.route('/submit', methods=['POST'])
 def submit():
@@ -205,9 +228,13 @@ def submit():
             f"${order_total}", "Pending"
         ], value_input_option='USER_ENTERED')
 
-        if request.form.get('join_list'):
+        if request.form.get('join_list') or is_subscribing == "Yes":
             sub_sheet = sheet.worksheet("Subscribers")
-            if contact not in sub_sheet.col_values(2):
+            try:
+                existing_emails = sub_sheet.col_values(2)
+            except:
+                existing_emails = []
+            if contact not in existing_emails:
                 sub_sheet.append_row([timestamp.strftime("%m/%d/%Y %H:%M:%S"), contact, 'Active'], value_input_option='USER_ENTERED')
 
         send_bakery_email(contact, name, order_total, is_late=is_late)
@@ -229,6 +256,27 @@ def subscribe():
         return render_template('subscribe_success.html', email=email)
     except: return redirect(url_for('home'))
 
+@app.route('/vip')
+def vip():
+    try:
+        sheet = get_sheet()
+        items = sheet.worksheet("Menu").get_all_records()
+        # Filter: Status Active and VIP column is NOT 'No'
+        visible_items = [i for i in items if i.get('Status') == 'Active' and str(i.get('VIP', '')).strip().lower() != 'no']
+        
+        settings = {i['Setting Name']: i['Value'] for i in sheet.worksheet("Settings").get_all_records() if i.get('Setting Name')}
+        
+        bake_dt, _, _ = get_bake_settings()
+        settings['Next Bake Date'] = f"{bake_dt.strftime('%B')} {bake_dt.day}"
+        
+        for key, set_key in [('window_list', 'Pickup Windows'), ('dc_window_list', 'DC Pickup Windows'), 
+                             ('wws_window_list', 'WWS (Pickup) Info'), ('woodmont_window_list', '8001 Woodmont (Front desk delivery)')]:
+            if settings.get(set_key): settings[key] = [w.strip() for w in settings[set_key].split(',')]
+            
+        return render_template('vip.html', items=visible_items, details=settings)
+    except Exception as e:
+        return f"VIP Portal Error: {e}"
+
 @app.route('/vip-submit', methods=['POST'])
 def vip_submit():
     try:
@@ -238,8 +286,6 @@ def vip_submit():
         timestamp = datetime.now(ZoneInfo('America/New_York'))
         
         sheet = get_sheet()
-        
-        # 1. VIP SIZE LOOKUP
         loaf_size = "[SIZE UNKNOWN - MANUAL CHECK]"
         try:
             sub_records = sheet.worksheet("Bread Subscriptions").get_all_records()
@@ -251,86 +297,55 @@ def vip_submit():
             
         order_summary = f"{base_summary} ({loaf_size})"
         
-        # 2. PREMIUM SURCHARGE LOGIC
-        # Detect if the Multi-grain loaf was selected
+        # Premium Surcharge Detection
         has_premium = "Multi-grain Sandwich Loaf" in base_summary
-        
         payment_status = "Paid"
         order_total_val = "VIP Prepaid"
         
         if has_premium:
-            # We flag this for you so you know to look for a $4 Venmo
             payment_status = "Paid (Pending $4 Surcharge)"
             order_total_val = "VIP + $4.00"
 
-        # 3. LOGISTICS
         logistics_choice = request.form.get('logistics')
         logistics_details = request.form.get(LOGISTICS_MAP.get(logistics_choice), 'N/A')
 
-        # 4. APPEND TO SHEET
         sheet.worksheet("Orders").append_row([
-            timestamp.strftime("%m/%d/%Y %H:%M:%S"), 
-            name, 
-            contact, 
-            order_summary, 
-            logistics_choice, 
-            logistics_details, 
-            "Yes (VIP)", 
-            request.form.get('notes'),
-            order_total_val, 
-            payment_status
+            timestamp.strftime("%m/%d/%Y %H:%M:%S"), name, contact, order_summary, 
+            logistics_choice, logistics_details, "Yes (VIP)", request.form.get('notes'),
+            order_total_val, payment_status
         ], value_input_option='USER_ENTERED')
 
         send_vip_email("🍞 VIP Order Confirmed!", contact, name)
         return redirect(url_for('vip_success', name=name))
-    except Exception as e: 
-        return f"Error: {e}"
+    except Exception as e: return f"Error: {e}"
 
 @app.route('/unsubscribe')
-def unsubscribe(): return render_template('unsubscribe.html')
+def unsubscribe():
+    return render_template('unsubscribe.html')
 
 @app.route('/success')
 def success():
-    name, total, is_late = request.args.get('name', ''), request.args.get('total', '0.00'), request.args.get('is_late') == 'True'
-    msg = "Your pre-order is in for NEXT week's bake!" if is_late else f"Thanks {name}, your order is confirmed!"
-    return render_template('success.html', name=name, message=msg, total=total, details={})
-
-@app.route('/vip-success')
-def vip_success(): return render_template('vip_success.html', name=request.args.get('name', ''), details={})
-
-@app.route('/early-access')
-def early_access(): # (Logic omitted for brevity but keeping route active)
-    return redirect(url_for('home'))
-
-@app.route('/vip')
-def vip():
     try:
-        sheet = get_sheet()
-        # Fetch Menu Items
-        items = sheet.worksheet("Menu").get_all_records()
-        # Filter for Active items that are NOT marked 'No' in the VIP column
-        visible_items = [i for i in items if i.get('Status') == 'Active' and str(i.get('VIP', '')).strip().lower() != 'no']
+        name = request.args.get('name', '')
+        total = request.args.get('total', '0.00')
+        is_late = request.args.get('is_late') == 'True'
         
-        # Fetch Settings
+        sheet = get_sheet()
         settings = {i['Setting Name']: i['Value'] for i in sheet.worksheet("Settings").get_all_records() if i.get('Setting Name')}
         
-        # Calculate Dates for the Banner
-        bake_dt, deadline_dt, deadline_text = get_bake_settings()
-        settings['Next Bake Date'] = f"{bake_dt.strftime('%B')} {bake_dt.day}"
-        
-        # Setup Logistics Windows for the dropdowns
-        for key, set_key in [
-            ('window_list', 'Pickup Windows'), 
-            ('dc_window_list', 'DC Pickup Windows'), 
-            ('wws_window_list', 'WWS (Pickup) Info'), 
-            ('woodmont_window_list', '8001 Woodmont (Front desk delivery)')
-        ]:
-            if settings.get(set_key):
-                settings[key] = [w.strip() for w in settings[set_key].split(',')]
-            
-        return render_template('vip.html', items=visible_items, details=settings)
-    except Exception as e:
-        print(f"VIP Portal Error: {e}")
-        return f"Error loading VIP Portal: {e}"
+        msg = "Your pre-order is in for NEXT week's bake!" if is_late else f"Thanks {name}, your order is confirmed!"
+        return render_template('success.html', name=name, message=msg, total=total, details=settings, is_late=is_late)
+    except:
+        return redirect(url_for('home'))
+
+@app.route('/vip-success')
+def vip_success():
+    try:
+        name = request.args.get('name', '')
+        sheet = get_sheet()
+        settings = {i['Setting Name']: i['Value'] for i in sheet.worksheet("Settings").get_all_records() if i.get('Setting Name')}
+        return render_template('vip_success.html', name=name, details=settings)
+    except:
+        return redirect(url_for('home'))
 
 index = app
