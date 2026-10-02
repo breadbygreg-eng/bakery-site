@@ -238,7 +238,9 @@ def vip_submit():
         timestamp = datetime.now(ZoneInfo('America/New_York'))
         
         sheet = get_sheet()
-        loaf_size = "[SIZE UNKNOWN - MANUAL CHECK]" # Hardened Fallback logic
+        
+        # 1. VIP SIZE LOOKUP
+        loaf_size = "[SIZE UNKNOWN - MANUAL CHECK]"
         try:
             sub_records = sheet.worksheet("Bread Subscriptions").get_all_records()
             for row in sub_records:
@@ -248,18 +250,41 @@ def vip_submit():
         except: pass
             
         order_summary = f"{base_summary} ({loaf_size})"
+        
+        # 2. PREMIUM SURCHARGE LOGIC
+        # Detect if the Multi-grain loaf was selected
+        has_premium = "Multi-grain Sandwich Loaf" in base_summary
+        
+        payment_status = "Paid"
+        order_total_val = "VIP Prepaid"
+        
+        if has_premium:
+            # We flag this for you so you know to look for a $4 Venmo
+            payment_status = "Paid (Pending $4 Surcharge)"
+            order_total_val = "VIP + $4.00"
+
+        # 3. LOGISTICS
         logistics_choice = request.form.get('logistics')
         logistics_details = request.form.get(LOGISTICS_MAP.get(logistics_choice), 'N/A')
 
+        # 4. APPEND TO SHEET
         sheet.worksheet("Orders").append_row([
-            timestamp.strftime("%m/%d/%Y %H:%M:%S"), name, contact, order_summary, 
-            logistics_choice, logistics_details, "Yes (VIP)", request.form.get('notes'),
-            "VIP Prepaid", "Paid"
+            timestamp.strftime("%m/%d/%Y %H:%M:%S"), 
+            name, 
+            contact, 
+            order_summary, 
+            logistics_choice, 
+            logistics_details, 
+            "Yes (VIP)", 
+            request.form.get('notes'),
+            order_total_val, 
+            payment_status
         ], value_input_option='USER_ENTERED')
 
         send_vip_email("🍞 VIP Order Confirmed!", contact, name)
         return redirect(url_for('vip_success', name=name))
-    except Exception as e: return f"Error: {e}"
+    except Exception as e: 
+        return f"Error: {e}"
 
 @app.route('/unsubscribe')
 def unsubscribe(): return render_template('unsubscribe.html')
