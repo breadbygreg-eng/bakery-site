@@ -18,4 +18,11 @@
       "destination": "/api/index.py"
     }
   ]
+  "crons": [
+    {
+      "path": "/tasks/monthly-billing-blast",
+      "schedule": "0 12 1 * *"
+    }
+  ]
+}
 }
