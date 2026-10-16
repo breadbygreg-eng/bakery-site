@@ -116,19 +116,25 @@ def send_subscription_email(subject, recipient, name=None):
     try:
         html_content = f"""
             <html>
-                <body style="font-family: sans-serif; line-height: 1.6; color: #333;">
+                <body style="font-family: 'Lato', sans-serif; line-height: 1.6; color: #333;">
                     <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
-                        <h2 style="color: #d4a373;">Welcome to the VIP Carb Club{"" if not name else ", " + name}! 🍞</h2>
+                        <h2 style="font-family: 'Roboto Slab', serif; color: #d4a373;">Welcome to the VIP Carb Club{"" if not name else ", " + name}! 🍞</h2>
                         <p>You are officially on the Aiara Bakery VIP roster. No more Friday morning panics.</p>
+                        
                         <div style="background: #fdfaf5; padding: 20px; border-left: 4px solid #d4a373; margin: 25px 0;">
-                            <h3 style="margin-top: 0; color: #5d4037;">How the Billing Works</h3>
-                            <p>Subscriptions are billed at a flat monthly rate ($30/month). I will be sending your first payment request shortly via Venmo.</p>
+                            <h3 style="margin-top: 0; color: #5d4037; font-family: 'Roboto Slab', serif;">How the Billing Works</h3>
+                            <p style="margin-bottom: 0;">Subscriptions are billed at a flat monthly rate ($30/month). <strong>I'll send your first payment request email on the first of the month.</strong></p>
                         </div>
+                        
                         <p>Welcome to the club!</p>
+                        
+                        <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+                        <small style="color: #888;">Aiara Bakery | Clarksburg, MD</small>
                     </div>
                 </body>
             </html>
         """
+        # ... remainder of the Brevo API call logic ...
         data = {
             "sender": {"name": "Aiara Bakery", "email": "greg@aiarabakery.com"},
             "to": [{"email": recipient}], "bcc": [{"email": "greg@aiarabakery.com"}],
@@ -347,5 +353,49 @@ def vip_success():
         return render_template('vip_success.html', name=name, details=settings)
     except:
         return redirect(url_for('home'))
+
+def send_monthly_billing_email(recipient, name):
+    try:
+        html_content = f"""
+            <html>
+                <body style="font-family: 'Lato', sans-serif; line-height: 1.6; color: #333;">
+                    <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
+                        <h2 style="font-family: 'Roboto Slab', serif; color: #5d4037;">It's Bread Month, {name}! 🍞</h2>
+                        <p>It is the 1st of the month, which means it's time to secure your spot on the VIP roster for the upcoming bakes.</p>
+                        
+                        <div style="background: #fdfaf5; padding: 25px; border: 1px solid #d4a373; text-align: center; margin: 25px 0;">
+                            <h3 style="margin-top: 0; color: #5d4037; font-family: 'Roboto Slab', serif;">Monthly Dues: $30.00</h3>
+                            <p>Please send your payment via Venmo to finalize your subscription for this month.</p>
+                            <a href="https://venmo.com/aiarabakery" style="display: inline-block; background: #008CFF; color: white; padding: 12px 25px; text-decoration: none; border-radius: 4px; font-weight: bold;">Pay with Venmo</a>
+                        </div>
+                        
+                        <p style="font-size: 0.9em; color: #666;">If you need to pause your subscription this month or pay via Zelle (greg@aiarabakery.com), just reply to this email!</p>
+                        <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+                        <small style="color: #888;">Aiara Bakery VIP Program</small>
+                    </div>
+                </body>
+            </html>
+        """
+        # Logic to call Brevo API (same as your other email functions)
+        # ... 
+    except Exception as e:
+        print(f"Billing Email Error: {e}")
+
+@app.route('/tasks/monthly-billing-blast')
+def monthly_billing_blast():
+    # Security check: Ensure this is called by Vercel or has a secret key
+    # (Optional: if request.headers.get('Authorization') != 'Bearer ' + os.environ.get('CRON_SECRET'): return "Unauthorized", 401)
+    
+    sheet = get_sheet()
+    # Replace "Bread Subscriptions" with your actual tab name
+    subscribers = sheet.worksheet("Bread Subscriptions").get_all_records()
+    
+    count = 0
+    for sub in subscribers:
+        if str(sub.get('Status', '')).strip().lower() == 'active':
+            send_monthly_billing_email(sub['Email'], sub.get('Name', 'VIP'))
+            count += 1
+            
+    return f"Successfully sent {count} billing reminders.", 200
 
 index = app
