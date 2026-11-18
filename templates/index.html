@@ -23,7 +23,13 @@
             min-height: 100vh;
         }
 
-        /* Bazaar Banner - Re-styled for mid-page placement */
+        /* Bazaar Banner - Interactive and Clickable */
+        .event-banner-link {
+            text-decoration: none; /* Remove default underline */
+            display: block;
+            transition: transform 0.2s ease;
+        }
+
         .event-banner {
             background-color: var(--accent-gold);
             color: var(--primary-brown);
@@ -37,6 +43,13 @@
             border-radius: 2px;
             margin-bottom: 25px;
             line-height: 1.4;
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: background-color 0.2s ease;
+        }
+
+        .event-banner-link:hover .event-banner {
+            background-color: #e5b485; /* Slightly brighter on hover */
+            cursor: pointer;
         }
 
         .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
@@ -217,11 +230,13 @@
             <p style="text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem;">Artisan Sourdough • Clarksburg, MD</p>
         </header>
 
-        <!-- Bazaar Banner placed above the Bake Info box -->
-        <div class="event-banner">
-            🍂 Join us at the WWS Fall Bazaar!<br>
-            Saturday, Nov 21 • 10am – 3pm • Bethesda campus
-        </div>
+        <!-- Clickable Bazaar Banner -->
+        <a href="https://www.washingtonwaldorf.org/community/fall-bazaar/" target="_blank" class="event-banner-link">
+            <div class="event-banner">
+                🍂 Join us at the WWS Fall Bazaar!<br>
+                Saturday, Nov 21 • 10am – 3pm • Bethesda campus
+            </div>
+        </a>
 
         <div class="bake-info {% if details['is_closing_soon'] %}closing-soon{% endif %}">
             {% if details['Store Status'] == 'Pre-Order' %}
