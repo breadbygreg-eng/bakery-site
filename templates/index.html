@@ -23,6 +23,22 @@
             min-height: 100vh;
         }
 
+        /* Bazaar Banner - Re-styled for mid-page placement */
+        .event-banner {
+            background-color: var(--accent-gold);
+            color: var(--primary-brown);
+            text-align: center;
+            padding: 15px 20px;
+            font-family: 'Roboto Slab', serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border-radius: 2px;
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
+
         .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
 
         header { text-align: center; margin-bottom: 30px; }
@@ -34,7 +50,6 @@
             font-style: italic;
         }
 
-        /* Condensed Two-Line Bake Info Card */
         .bake-info {
             background: rgba(255, 255, 255, 0.98);
             color: #333; 
@@ -84,7 +99,6 @@
             font-size: 1.5rem;
         }
 
-        /* FAQ Styling */
         .faq-item { border-bottom: 1px solid #eee; }
         .faq-question {
             font-family: 'Roboto Slab', serif;
@@ -101,7 +115,6 @@
         .faq-item.active .faq-question::after { transform: rotate(45deg); }
         .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; font-size: 0.95rem; color: #444; }
 
-        /* Menu Styling & Horizontal Alignment Fix */
         .item { 
             display: flex; 
             justify-content: space-between; 
@@ -127,11 +140,10 @@
             line-height: 1;
         }
 
-        /* Dropdown Fix: appearance: none + custom SVG arrow for breathing room */
         select {
             width: 100%; 
             height: 38px; 
-            padding: 0 45px 0 12px; /* 45px right padding for arrow */
+            padding: 0 45px 0 12px; 
             border: 1px solid #ddd; 
             border-radius: 4px; 
             font-weight: bold;
@@ -149,7 +161,6 @@
             background-size: 18px;
         }
 
-        /* Order Form Styling */
         .order-form { 
             background: var(--cream-bg); 
             color: #333; 
@@ -164,7 +175,6 @@
             box-sizing: border-box; font-family: 'Lato', sans-serif;
         }
 
-        /* Checkbox Horizontal Alignment Fix */
         .subscription-container {
             margin: 20px 0; 
             padding: 15px; 
@@ -207,6 +217,12 @@
             <p style="text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem;">Artisan Sourdough • Clarksburg, MD</p>
         </header>
 
+        <!-- Bazaar Banner placed above the Bake Info box -->
+        <div class="event-banner">
+            🍂 Join us at the WWS Fall Bazaar!<br>
+            Saturday, Nov 21 • 10am – 3pm • Bethesda campus
+        </div>
+
         <div class="bake-info {% if details['is_closing_soon'] %}closing-soon{% endif %}">
             {% if details['Store Status'] == 'Pre-Order' %}
                 <div style="font-weight: bold; color: var(--primary-brown);">Next Schedule Drops Friday</div>
@@ -222,15 +238,15 @@
             <h2>About the Bakery</h2>
             <div class="faq-item">
                 <div class="faq-question">Our Bread & Sizing</div>
-                <div class="faq-answer"><div style="padding: 0 0 20px 0;">Standard artisan format (~600g) and family format (~900g). Locally grown, freshly milled organic grains.</div></div>
+                <div class="faq-answer"><div style="padding: 0 0 20px 0;">Standard artisan format (650g) and family format (1kg). Locally grown, freshly milled organic grains.</div></div>
             </div>
             <div class="faq-item">
                 <div class="faq-question">How Ordering Works</div>
-                <div class="faq-answer"><div style="padding: 0 0 20px 0;">Micro-bakery cycle: Orders are due by Tuesday 8pm every week. Pickup from your selected time & location on Fridays and Saturdays.</div></div>
+                <div class="faq-answer"><div style="padding: 0 0 20px 0;">Micro-bakery cycle: Menu drops Friday, pre-orders close Thursday at 8PM, pickup on baking day.</div></div>
             </div>
             <div class="faq-item">
                 <div class="faq-question">The Monthly Subscription</div>
-                <div class="faq-answer"><div style="padding: 0 0 20px 0;">$30/month. Guaranteed loaf every week without needing to fight the rush. (Sandwich loaves included for a small surcharge.)</div></div>
+                <div class="faq-answer"><div style="padding: 0 0 20px 0;">$30/mo small, $40/mo large. Guaranteed loaf every week without needing to fight the rush.</div></div>
             </div>
         </div>
 
@@ -252,7 +268,7 @@
                             {% endfor %}
                         </select>
                     {% else %}
-                        <small style="color: #999; font-weight: bold; text-transform: uppercase;">Sold Out</small>
+                        <small style="color: #888; font-weight: bold; text-transform: uppercase;">Sold Out</small>
                     {% endif %}
                 </div>
             </div>
@@ -289,36 +305,15 @@
                         <option value="8001 Woodmont (Front desk delivery)">8001 Woodmont (Front desk delivery)</option>
                     </select>
 
-                    <!-- Logistics Area Windows -->
                     <div id="pickupArea" style="display:none; margin-bottom: 15px; background: #fff; padding: 10px; border-radius: 4px;">
                         <label>Clarksburg Window</label>
                         <select name="pickup_window">{% for w in details['window_list'] %}<option value="{{ w }}">{{ w }}</option>{% endfor %}</select>
-                    </div>
-                    <div id="dcArea" style="display:none; margin-bottom: 15px; background: #fff; padding: 10px; border-radius: 4px;">
-                        <label>DC Window</label>
-                        <select name="dc_pickup_window">{% for w in details['dc_window_list'] %}<option value="{{ w }}">{{ w }}</option>{% endfor %}</select>
-                    </div>
-                    <div id="schoolArea" style="display:none; margin-bottom: 15px; background: #fff; padding: 10px; border-radius: 4px;">
-                        <label>WWS Window</label>
-                        <select name="wws_pickup_window">{% for w in details['wws_window_list'] %}<option value="{{ w }}">{{ w }}</option>{% endfor %}</select>
-                    </div>
-                    <div id="woodmontArea" style="display:none; margin-bottom: 15px; background: #fff; padding: 10px; border-radius: 4px;">
-                        <label>Woodmont Window</label>
-                        <select name="woodmont_window">{% for w in details['woodmont_window_list'] %}<option value="{{ w }}">{{ w }}</option>{% endfor %}</select>
                     </div>
 
                     <textarea name="notes" rows="2" placeholder="Notes (optional)"></textarea>
                     <button type="submit" id="submitBtn">Submit Order</button>
                 </form>
             {% endif %}
-        </div>
-
-        <div style="text-align: center; margin-top: 40px; padding: 30px; background: rgba(0,0,0,0.2);">
-            <h3 style="font-family: 'Roboto Slab';">Join the Bread List</h3>
-            <form action="/subscribe" method="POST">
-                <input type="email" name="email" required placeholder="Email Address" style="max-width: 300px;">
-                <button type="submit" style="width: auto; padding: 10px 30px; border: 2px solid var(--accent-gold); background: transparent;">Notify Me</button>
-            </form>
         </div>
     </div>
 
@@ -334,9 +329,6 @@
         function toggleLogistics() {
             const val = document.getElementById('logistics').value;
             document.getElementById('pickupArea').style.display = val === 'Clarksburg Resident (Pickup)' ? 'block' : 'none';
-            document.getElementById('dcArea').style.display = val === 'Washington, DC 29th St NW' ? 'block' : 'none';
-            document.getElementById('schoolArea').style.display = val === 'WWS (Pickup)' ? 'block' : 'none';
-            document.getElementById('woodmontArea').style.display = val === '8001 Woodmont (Front desk delivery)' ? 'block' : 'none';
         }
 
         function openSubModal(e) { e.preventDefault(); document.getElementById('subModal').style.display = 'flex'; }
