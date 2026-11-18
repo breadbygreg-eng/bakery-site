@@ -23,9 +23,9 @@
             min-height: 100vh;
         }
 
-        /* Bazaar Banner - Interactive and Clickable */
+        /* Clickable Bazaar Banner */
         .event-banner-link {
-            text-decoration: none; /* Remove default underline */
+            text-decoration: none;
             display: block;
             transition: transform 0.2s ease;
         }
@@ -48,7 +48,7 @@
         }
 
         .event-banner-link:hover .event-banner {
-            background-color: #e5b485; /* Slightly brighter on hover */
+            background-color: #e5b485;
             cursor: pointer;
         }
 
@@ -320,9 +320,28 @@
                         <option value="8001 Woodmont (Front desk delivery)">8001 Woodmont (Front desk delivery)</option>
                     </select>
 
+                    <!-- Clarksburg -->
                     <div id="pickupArea" style="display:none; margin-bottom: 15px; background: #fff; padding: 10px; border-radius: 4px;">
                         <label>Clarksburg Window</label>
                         <select name="pickup_window">{% for w in details['window_list'] %}<option value="{{ w }}">{{ w }}</option>{% endfor %}</select>
+                    </div>
+
+                    <!-- Washington DC -->
+                    <div id="dcArea" style="display:none; margin-bottom: 15px; background: #fff; padding: 10px; border-radius: 4px;">
+                        <label>DC Window</label>
+                        <select name="dc_pickup_window">{% for w in details['dc_window_list'] %}<option value="{{ w }}">{{ w }}</option>{% endfor %}</select>
+                    </div>
+
+                    <!-- WWS -->
+                    <div id="schoolArea" style="display:none; margin-bottom: 15px; background: #fff; padding: 10px; border-radius: 4px;">
+                        <label>WWS Window</label>
+                        <select name="wws_pickup_window">{% for w in details['wws_window_list'] %}<option value="{{ w }}">{{ w }}</option>{% endfor %}</select>
+                    </div>
+
+                    <!-- Woodmont -->
+                    <div id="woodmontArea" style="display:none; margin-bottom: 15px; background: #fff; padding: 10px; border-radius: 4px;">
+                        <label>Woodmont Window</label>
+                        <select name="woodmont_window">{% for w in details['woodmont_window_list'] %}<option value="{{ w }}">{{ w }}</option>{% endfor %}</select>
                     </div>
 
                     <textarea name="notes" rows="2" placeholder="Notes (optional)"></textarea>
@@ -343,7 +362,18 @@
     <script>
         function toggleLogistics() {
             const val = document.getElementById('logistics').value;
-            document.getElementById('pickupArea').style.display = val === 'Clarksburg Resident (Pickup)' ? 'block' : 'none';
+            
+            // First, hide all areas
+            document.getElementById('pickupArea').style.display = 'none';
+            document.getElementById('dcArea').style.display = 'none';
+            document.getElementById('schoolArea').style.display = 'none';
+            document.getElementById('woodmontArea').style.display = 'none';
+
+            // Show the relevant one
+            if (val === 'Clarksburg Resident (Pickup)') document.getElementById('pickupArea').style.display = 'block';
+            if (val === 'Washington, DC 29th St NW') document.getElementById('dcArea').style.display = 'block';
+            if (val === 'WWS (Pickup)') document.getElementById('schoolArea').style.display = 'block';
+            if (val === '8001 Woodmont (Front desk delivery)') document.getElementById('woodmontArea').style.display = 'block';
         }
 
         function openSubModal(e) { e.preventDefault(); document.getElementById('subModal').style.display = 'flex'; }
