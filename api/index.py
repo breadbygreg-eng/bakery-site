@@ -280,5 +280,10 @@ def success():
 @app.route('/vip-success')
 def vip_success():
     return render_template('vip_success.html', name=request.args.get('name', ''))
-
+    
+@app.route('/join')
+def join():
+    """Standalone lightweight signup page for QR code scans."""
+    return render_template('join.html')
+                         
 index = app
