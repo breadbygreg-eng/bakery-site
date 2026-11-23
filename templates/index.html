@@ -23,35 +23,6 @@
             min-height: 100vh;
         }
 
-        /* Clickable Bazaar Banner */
-        .event-banner-link {
-            text-decoration: none;
-            display: block;
-            transition: transform 0.2s ease;
-        }
-
-        .event-banner {
-            background-color: var(--accent-gold);
-            color: var(--primary-brown);
-            text-align: center;
-            padding: 15px 20px;
-            font-family: 'Roboto Slab', serif;
-            font-weight: 700;
-            font-size: 1.1rem;
-            letter-spacing: 0.5px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            border-radius: 2px;
-            margin-bottom: 25px;
-            line-height: 1.4;
-            border: 1px solid rgba(0,0,0,0.05);
-            transition: background-color 0.2s ease;
-        }
-
-        .event-banner-link:hover .event-banner {
-            background-color: #e5b485;
-            cursor: pointer;
-        }
-
         .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
 
         header { text-align: center; margin-bottom: 30px; }
@@ -229,14 +200,6 @@
             <h1>Aiara Bakery</h1>
             <p style="text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem;">Artisan Sourdough • Clarksburg, MD</p>
         </header>
-
-        <!-- Clickable Bazaar Banner -->
-        <a href="https://www.washingtonwaldorf.org/community/fall-bazaar/" target="_blank" class="event-banner-link">
-            <div class="event-banner">
-                🍂 Join us at the WWS Fall Bazaar!<br>
-                Saturday, Nov 21 • 10am – 3pm • Bethesda campus
-            </div>
-        </a>
 
         <div class="bake-info {% if details['is_closing_soon'] %}closing-soon{% endif %}">
             {% if details['Store Status'] == 'Pre-Order' %}
